@@ -111,4 +111,26 @@ public class Client {
             e.printStackTrace();
         }
     }
+
+            /*File f = new File("./Server/src/data.txt");
+        if (!f.isFile()) {
+            try {
+                PrintWriter writer = new PrintWriter("./Server/src/data.txt", "UTF-8");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e2) {
+                e2.printStackTrace();
+            }
+        } else {
+            try (BufferedReader br = new BufferedReader(new FileReader(f))) {
+                for (String line; (line = br.readLine()) != null; ) {
+                    String[] parts = line.split(";");
+                    User new_user = new User(Integer.parseInt(parts[0]), parts[1], parts[2]);
+                    users_list.add(new_user);
+                }
+                // line is not visible here.
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }*/
 }

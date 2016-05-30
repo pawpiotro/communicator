@@ -17,8 +17,6 @@ public class Server {
 
     public static List<User> users_list = new ArrayList<>();
     public static ServerDisplay display = new ServerDisplay();
-    public static List<Socket> client_sockets = new ArrayList<>();
-    public static List<PrintWriter> outputs = new ArrayList<>();
     private void serverInit(){
         try
         {
@@ -37,16 +35,16 @@ public class Server {
 
     }
 
-    public static void distributeList(){
+    public synchronized static void distributeList(){
         String list = "usrls";
         for(User usr: users_list) {
             list = list+usr.getid()+":"+usr.getName()+";";
         }
-        for(PrintWriter elem: outputs){
-            elem.println(list);
+        for(User elem: users_list){
+            elem.output_stream.println(list);
         }
     }
-    public static User findUser(int id){
+    public synchronized static User findUser(int id){
         for(User tmp: users_list)
             if(tmp.getid() == id) {
                 return tmp;
@@ -56,20 +54,18 @@ public class Server {
     public static void connectionFailed(Socket socket){
         try {
             socket.close();
-            client_sockets.remove(socket);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    public static void disconnect(int id){
+    public synchronized static void disconnect(int id){
         try {
             User usr = findUser(id);
             String name = usr.getName();
             if(name.equals(null))
                 name = "Unknown user";
             String address = usr.getAddress();
-            client_sockets.remove(usr.getSocket());
-            usr.getSocket().close();
+            usr.socket.close();
             users_list.remove(usr);
             System.out.println(name+" ("+address+") disconnected");
             display.printUsers();
@@ -83,34 +79,11 @@ public class Server {
         Server server = new Server();
         server.serverInit();
         display.setVisible(true);
-        /*File f = new File("./Server/src/data.txt");
-        if (!f.isFile()) {
-            try {
-                PrintWriter writer = new PrintWriter("./Server/src/data.txt", "UTF-8");
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e2) {
-                e2.printStackTrace();
-            }
-        } else {
-            try (BufferedReader br = new BufferedReader(new FileReader(f))) {
-                for (String line; (line = br.readLine()) != null; ) {
-                    String[] parts = line.split(";");
-                    User new_user = new User(Integer.parseInt(parts[0]), parts[1], parts[2]);
-                    users_list.add(new_user);
-                }
-                // line is not visible here.
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }*/
         while(running) {
             try {
-                Socket tmp_socket =server.server_socket.accept();
-                client_sockets.add(tmp_socket);
+                Socket tmp_socket = server.server_socket.accept();
                 Thread tmp = new Thread(new Connection(client_seq,tmp_socket));
-                if(tmp != null)
-                    tmp.start();
+                tmp.start();
                 client_seq++;
                 display.printUsers();
             } catch (IOException e) {

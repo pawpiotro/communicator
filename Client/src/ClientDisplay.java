@@ -10,7 +10,7 @@ import java.awt.*;
 public class ClientDisplay extends JFrame{
 
     private static JTextArea area = new JTextArea();
-    private static JTextArea area2 = new JTextArea();
+    private static JList list = new JList();
     private static JTextArea input = new JTextArea();
 
     private class sendAction implements ActionListener, KeyListener {
@@ -88,14 +88,15 @@ public class ClientDisplay extends JFrame{
         panel.add(send);
 
 
-        JScrollPane pane2 = new JScrollPane(area2);
+        list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        list.setLayoutOrientation(JList.VERTICAL_WRAP);
+        list.setVisibleRowCount(-1);
+
+        JScrollPane pane2 = new JScrollPane(list);
         pane2.setBackground(my);
         pane2.setPreferredSize(new Dimension(160,300));
-        area2.setLineWrap(true);
-        area2.setWrapStyleWord(true);
-        area2.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 2));
-        area2.setEditable(false);
         panel2.add(pane2);
+
 
         panel.setBackground(my);
         panel2.setBackground(my);
@@ -134,10 +135,10 @@ public class ClientDisplay extends JFrame{
         input.setEditable(false);
     }
     public void printUsers(){
-        area2.setText("");
-        area2.append("ID    Name\n");
-        for(Contact elem : Client.contacts_list) {
-            area2.append(elem.getid() + "       " + elem.getName()+"\n");
+        String[] contacts = new String[Client.contacts_list.size()];
+        for(int i = 0; i < Client.contacts_list.size(); i++) {
+            contacts[i] = Client.contacts_list.get(i).getName();
         }
+        list.setListData(contacts);
     }
 }

@@ -39,14 +39,14 @@ public class ServerDisplay extends JFrame{
         area.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 2));
         area.setEditable(false);
 
-        pane.setPreferredSize(new Dimension(300, 300));
+        pane.setPreferredSize(new Dimension(200, 300));
 
         PrintStream print_stream = new PrintStream(new CustomOutputStream(area));
         //PrintStream standard_out = System.out; //stary output
 
         //podmiana standardowego strumienia
         System.setOut(print_stream);
-        System.setErr(print_stream);
+        //System.setErr(print_stream);
 
         pane2.setPreferredSize(new Dimension(160,300));
 
@@ -73,10 +73,10 @@ public class ServerDisplay extends JFrame{
         addWindowListener(new WindowAdapter()
         {
             @Override
-            public void windowClosing(WindowEvent e)
+            public synchronized void windowClosing(WindowEvent e)
             {
-                for(PrintWriter elem: Server.outputs)
-                    elem.println("close");
+                for(User elem: Server.users_list)
+                    elem.output_stream.println("close");
                 System.exit(0);
             }
         });
@@ -91,7 +91,7 @@ public class ServerDisplay extends JFrame{
         //area.setCaretPosition(area.getDocument().getLength());
     }
 
-    public void printUsers(){
+    public synchronized void printUsers(){
         area2.setText("");
         area2.append("ID    Name        Address\n");
         for(User elem : Server.users_list) {

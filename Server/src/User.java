@@ -1,3 +1,7 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
@@ -8,16 +12,14 @@ public class User {
     private int id;
     private String name;
     private String address;
-    private Socket socket;
-    public User(int id, String name, String address, Socket socket){
+    public Socket socket;
+    public PrintWriter output_stream;
+    public User(int id, String name, String address, Socket socket, PrintWriter output){
         this.id = id;
         this.name = name;
         this.address = address;
         this.socket = socket;
-    }
-
-    public void print(){
-        System.out.println(id+" "+name+" "+address);
+        this.output_stream = output;
     }
 
     public int getid(){
@@ -29,6 +31,6 @@ public class User {
     public String getAddress(){
         return address;
     }
-    public Socket getSocket(){ return socket;}
+    /*public Socket getSocket(){ return socket;}
+    public PrintWriter getOutput(){ return output_stream;}*/
 }
-

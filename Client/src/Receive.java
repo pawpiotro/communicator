@@ -24,7 +24,6 @@ public class Receive implements Runnable{
                     found = true;
                     break;
                 }
-
             if(!found && (!name.equals(Client.name)))
                 Client.contacts_list.add(new Contact(id,name));
         }
