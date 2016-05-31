@@ -9,11 +9,19 @@ import java.awt.*;
 
 public class ClientDisplay extends JFrame{
 
-    private static JTextArea area = new JTextArea();
-    private static JList list = new JList();
-    private static JTextArea input = new JTextArea();
+    private JTextArea area = new JTextArea();
+    private JList list = new JList();
+    private JTextArea input = new JTextArea();
+    private JPanel main_panel = new JPanel();
+    private JPanel panel = new JPanel();
+    private JPanel panel2 =  new JPanel();
+    private JScrollPane pane = new JScrollPane(area);
+    private JScrollPane pane2 = new JScrollPane(list);
+    private JButton send = new JButton("Send");
+    private sendAction send_message = new sendAction();
 
     private class sendAction implements ActionListener, KeyListener {
+        @Override
         public void actionPerformed(ActionEvent e){
             String message = input.getText();
             if(!message.isEmpty()) {
@@ -22,6 +30,7 @@ public class ClientDisplay extends JFrame{
                 print(message);
             }
         }
+        @Override
         public void keyPressed(KeyEvent k){
             if (k.getKeyCode() == KeyEvent.VK_ENTER) {
                 String message = input.getText();
@@ -31,77 +40,64 @@ public class ClientDisplay extends JFrame{
                 }
             }
         }
+        @Override
         public void keyReleased(KeyEvent k){
             if (k.getKeyCode() == KeyEvent.VK_ENTER) {
                 input.setText("");
             }
         }
+        @Override
         public void keyTyped(KeyEvent k){}
     }
 
-    public static void requestFocusOnInput(){
+    public void requestFocusOnInput(){
         input.requestFocusInWindow();
     }
     public ClientDisplay(){
         Color my = new Color(50,150,225);
-
-        JPanel main_panel = new JPanel();
+        //MAIN PANEL
         main_panel.setBackground(my);
-
-        JPanel panel = new JPanel();
-        panel.setPreferredSize(new Dimension(260,340));
-        JPanel panel2 =  new JPanel();
-        panel2.setPreferredSize(new Dimension(160,340));
-
         main_panel.add(panel);
         main_panel.add(panel2);
-
+        //PANEL
+        panel.setPreferredSize(new Dimension(260,340));
         panel.setLayout(new FlowLayout());
-
-        JScrollPane pane = new JScrollPane(area);
+        panel.setBackground(my);
+        panel.add(pane);
+        panel.add(input);
+        panel.add(send);
+        //PANEL2
+        panel2.setPreferredSize(new Dimension(160,340));
+        panel2.add(pane2);
+        panel2.setBackground(my);
+        //PANE
         pane.setPreferredSize(new Dimension(260, 260));
         pane.setBackground(my);
-
-        DefaultCaret caret = (DefaultCaret) area.getCaret();
-        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-
+        //PANE2
+        pane2.setBackground(my);
+        pane2.setPreferredSize(new Dimension(160,300));
+        //AREA
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
         area.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 2));
         area.setEditable(false);
-
+        DefaultCaret caret = (DefaultCaret) area.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        //INPUT
         input.setLineWrap(true);
         input.setWrapStyleWord(true);
         input.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 2));
         input.setEditable(true);
         input.setPreferredSize(new Dimension(180, 36));
-
-
-        JButton send = new JButton("Send");
-        send.setPreferredSize(new Dimension(70,36));
-        sendAction send_message = new sendAction();
-        send.addActionListener(send_message);
         input.addKeyListener(send_message);
-
-        panel.add(pane);
-        panel.add(input);
-        panel.add(send);
-
-
+        //SEND BUTTON
+        send.setPreferredSize(new Dimension(70,36));
+        send.addActionListener(send_message);
+        //LIST
         list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         list.setLayoutOrientation(JList.VERTICAL_WRAP);
         list.setVisibleRowCount(-1);
 
-        JScrollPane pane2 = new JScrollPane(list);
-        pane2.setBackground(my);
-        pane2.setPreferredSize(new Dimension(160,300));
-        panel2.add(pane2);
-
-
-        panel.setBackground(my);
-        panel2.setBackground(my);
-
-        add(main_panel);
         initUI();
     }
 
@@ -111,6 +107,7 @@ public class ClientDisplay extends JFrame{
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setResizable(false);
+        add(main_panel);
         addWindowListener(new WindowAdapter()
         {
             @Override
@@ -128,10 +125,10 @@ public class ClientDisplay extends JFrame{
      * wyswietla wiadomosc w oknie programu
      * @param message wiadomosc do wyswietlenia
      */
-    static void print(String message){
+    public void print(String message){
         area.append(message+"\n");
     }
-    static void lock(){
+    public void lock(){
         input.setEditable(false);
     }
     public void printUsers(){
