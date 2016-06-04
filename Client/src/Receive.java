@@ -22,6 +22,8 @@ public class Receive implements Runnable{
             client.file_writer.write(s + "\n");
         } else {
             client.writeToFile(msg.substring(0,4), s);
+            client.hashMap.put(tmp.getName(),"newmsg");
+            client.display.printUsers();
         }
     }
     @Override

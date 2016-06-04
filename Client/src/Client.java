@@ -3,6 +3,7 @@ import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,7 +23,9 @@ public class Client {
 
     public List<Contact> contacts_list =  new ArrayList<>();
     public String name;
-    public String recipient_id = null;
+    public String recipient_id = "-1";
+
+    public HashMap hashMap = new HashMap();
 
     public PrintWriter file_writer;
     /**
@@ -64,7 +67,8 @@ public class Client {
                 display.unlock();
                 recipient_id = String.format("%4s", Integer.toString(tmp.getid())).replace(' ', '0');
                 openFile();
-                //msg_history = new File(path+recipient_id);
+                if(hashMap.containsKey(tmp.getName()))
+                    hashMap.remove(tmp.getName());
                 return;
             }
         }
@@ -178,13 +182,6 @@ public class Client {
                 contacts_list.add(new Contact(id, tmp_name));
             //if(recipientDisconnected())
               //  display.print("user discnnected");
-            /*if(recipientDisconnected()){
-                recipient_id = null;
-                display.print("User disconnected");
-                display.lock();
-            }*/
-            /*if (!found && (!name.equals(Client.name)))
-                contacts_list.add(new Contact(id, name));*/
         }
         display.printUsers();
     }

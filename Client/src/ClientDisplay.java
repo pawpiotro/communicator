@@ -2,12 +2,12 @@
  * Widok. Okno programu
  */
 
-import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.DefaultCaret;
 import java.awt.*;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -66,6 +66,22 @@ public class ClientDisplay extends JFrame{
         }
     }
 
+    private class MyListRenderer extends DefaultListCellRenderer {
+        public Component getListCellRendererComponent( JList list,
+                                                       Object value, int index, boolean isSelected,
+                                                       boolean cellHasFocus )
+        {
+            super.getListCellRendererComponent( list, value, index,
+                    isSelected, cellHasFocus );
+            if(client.hashMap.containsKey(value)) {
+                setForeground(Color.blue);
+            } else {
+                setForeground(Color.black);
+            }
+            return(this);
+        }
+    }
+
     public void requestFocusOnInput(){
         input.requestFocusInWindow();
     }
@@ -116,6 +132,7 @@ public class ClientDisplay extends JFrame{
         list.setVisibleRowCount(-1);
         list.addListSelectionListener(select_contact);
         list.setFixedCellWidth(156);
+        list.setCellRenderer(new MyListRenderer());
         initUI();
     }
 
@@ -136,7 +153,9 @@ public class ClientDisplay extends JFrame{
                 client.receive.interrupt();
                 e.getWindow().dispose();
                 try {
-                    client.deleteDirectory(new File("./Client/history/" + client.name));
+                    File f = new File("./Client/history/" + client.name);
+                    if(f.exists())
+                        client.deleteDirectory(f);
                 } catch(IOException e1){
                     e1.printStackTrace();
                 }
