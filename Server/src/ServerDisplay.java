@@ -3,14 +3,14 @@
  * Wypisuje wszystkie komunikaty i bledy.
  */
 
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.*;
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.PrintStream;
 
-public class ServerDisplay extends JFrame{
+public class ServerDisplay extends JFrame {
     private Server server;
     private JTextArea area2 = new JTextArea();
     private JTextArea area = new JTextArea();
@@ -19,7 +19,7 @@ public class ServerDisplay extends JFrame{
     private JScrollPane pane2 = new JScrollPane(area2);
     private PrintStream standard_out = System.out; //stary output
 
-    private void setCustomOutput(JTextArea area){
+    private void setCustomOutput(JTextArea area) {
         PrintStream print_stream = new PrintStream(new CustomOutputStream(area));
         //PrintStream standard_out = System.out; //stary output
 
@@ -27,18 +27,19 @@ public class ServerDisplay extends JFrame{
         System.setOut(print_stream);
         System.setErr(print_stream);
     }
-    public ServerDisplay(Server s){
+
+    public ServerDisplay(Server s) {
         server = s;
-        Color my = new Color(10,225,225);
+        Color my = new Color(10, 225, 225);
         //PANEL
-        panel.setLayout(new GridLayout(1,2));
+        panel.setLayout(new GridLayout(1, 2));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         panel.setBackground(my);
         panel.add(pane);
         panel.add(pane2);
         //PANE2
         pane2.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
-        pane2.setPreferredSize(new Dimension(160,300));
+        pane2.setPreferredSize(new Dimension(160, 300));
         pane2.setBackground(my);
         //AREA
         area.setLineWrap(true);
@@ -67,12 +68,10 @@ public class ServerDisplay extends JFrame{
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         add(panel);
         setVisible(true);
-        addWindowListener(new WindowAdapter()
-        {
+        addWindowListener(new WindowAdapter() {
             @Override
-            public synchronized void windowClosing(WindowEvent e)
-            {
-                for(User elem: server.users_list)
+            public synchronized void windowClosing(WindowEvent e) {
+                for (User elem : server.users_list)
                     elem.send("close");
                 System.exit(0);
             }
@@ -81,18 +80,19 @@ public class ServerDisplay extends JFrame{
 
     /**
      * wyswietla wiadomosc w oknie programu
+     *
      * @param message wiadomosc do wyswietlenia
      */
-    public void print(String message){
+    public void print(String message) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                area.append(message+"\n");
+                area.append(message + "\n");
                 //area.setCaretPosition(area.getDocument().getLength());
             }
         });
     }
 
-    public synchronized void printUsers(){
+    public synchronized void printUsers() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 area2.setText("");

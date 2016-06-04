@@ -3,10 +3,9 @@
  * Informacje te są potrzebne do nawiązywania połączeń między klientami.
  */
 
+import javax.swing.*;
 import java.io.IOException;
 import java.io.OutputStream;
-
-import javax.swing.*;
 
 public class CustomOutputStream extends OutputStream {
     private JTextArea textArea;

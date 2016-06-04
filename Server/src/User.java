@@ -1,6 +1,4 @@
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -14,7 +12,8 @@ public class User {
     private String address;
     private Socket socket;
     private PrintWriter output_stream;
-    public User(int id, String name, String address, Socket socket, PrintWriter output){
+
+    public User(int id, String name, String address, Socket socket, PrintWriter output) {
         this.id = id;
         this.name = name;
         this.address = address;
@@ -22,16 +21,27 @@ public class User {
         this.output_stream = output;
     }
 
-    public int getid(){
+    public int getid() {
         return id;
     }
-    public String getName(){
+
+    public String getName() {
         return name;
     }
-    public String getAddress(){
+
+    public String getAddress() {
         return address;
     }
-    public Socket getSocket(){ return socket;}
-    public void closeSocket() throws IOException { socket.close();}
-    public void send(String s){ output_stream.println(s);}
+
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public void closeSocket() throws IOException {
+        socket.close();
+    }
+
+    public void send(String s) {
+        output_stream.println(s);
+    }
 }

@@ -15,66 +15,72 @@ import java.util.regex.Pattern;
 public class Client {
     private int port = 12412; //default
     private String host = "127.0.0.1";  // default
-    public  ClientDisplay display;// = new ClientDisplay();
+    public ClientDisplay display;// = new ClientDisplay();
     private Socket server_socket;
     public BufferedReader input_stream;
     public PrintWriter output_stream;
     public Thread receive;
 
-    public List<Contact> contacts_list =  new ArrayList<>();
+    public List<Contact> contacts_list = new ArrayList<>();
     public String name;
     public String recipient_id = "-1";
 
     public HashMap hashMap = new HashMap();
 
     public PrintWriter file_writer;
+
     /**
      * Ustanawia polaczenie z serwerem.
+     *
      * @throws IOException
      */
-    private boolean makeConnection() throws IOException{
+    private boolean makeConnection() throws IOException {
         boolean connected = false;
-        while(!connected) {
+        while (!connected) {
             try {
                 server_socket = new Socket(host, port);
                 connected = true;
             } catch (ConnectException c) {
-                if(!changeServer())
+                if (!changeServer())
                     return false;
             }
         }
         input_stream = new BufferedReader(new InputStreamReader(server_socket.getInputStream()));
-        output_stream = new PrintWriter(server_socket.getOutputStream(),true);
+        output_stream = new PrintWriter(server_socket.getOutputStream(), true);
         return true;
     }
-    public void disconnectFromServer(){
+
+    public void disconnectFromServer() {
         try {
             display.print("Connection to server lost.");
             display.lock();
             server_socket.close();
-        } catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    /**Zmienia adresata. Wybór z listy
+
+    /**
+     * Zmienia adresata. Wybór z listy
      *
      * @param s
      */
-    public void changeRecipient(String s){
+    public void changeRecipient(String s) {
         closeFile();
-        for(Contact tmp: contacts_list){
-            if(s.equals(tmp.getName())){
+        for (Contact tmp : contacts_list) {
+            if (s.equals(tmp.getName())) {
                 display.unlock();
                 recipient_id = String.format("%4s", Integer.toString(tmp.getid())).replace(' ', '0');
                 openFile();
-                if(hashMap.containsKey(tmp.getName()))
+                if (hashMap.containsKey(tmp.getName()))
                     hashMap.remove(tmp.getName());
                 return;
             }
         }
     }
-    private void openFile(){
-        String path = "./Client/history/"+name+"/"+recipient_id+".txt";
+
+    private void openFile() {
+        String path = "./Client/history/" + name + "/" + recipient_id + ".txt";
         File f = new File(path);
         f.getParentFile().mkdirs();
         try {
@@ -91,25 +97,28 @@ public class Client {
             e.printStackTrace();
         }
     }
-    public void closeFile(){
-        String path = "./Client/history/"+name+"/"+recipient_id+".txt";
+
+    public void closeFile() {
+        String path = "./Client/history/" + name + "/" + recipient_id + ".txt";
         File f = new File(path);
-        if(f.isFile())
+        if (f.isFile())
             file_writer.close();
     }
-    public void writeToFile(String id, String s){
-        String path = "./Client/history/"+name+"/"+id+".txt";
+
+    public void writeToFile(String id, String s) {
+        String path = "./Client/history/" + name + "/" + id + ".txt";
         File f = new File(path);
         f.getParentFile().mkdirs();
         try {
             PrintWriter tmp_file_writer = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
-            tmp_file_writer.write(s+"\n");
+            tmp_file_writer.write(s + "\n");
             tmp_file_writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    void deleteDirectory(File f)throws IOException {
+
+    void deleteDirectory(File f) throws IOException {
         if (f.isDirectory()) {
             for (File c : f.listFiles())
                 deleteDirectory(c);
@@ -117,19 +126,19 @@ public class Client {
         if (!f.delete())
             throw new FileNotFoundException("Failed to delete file: " + f);
     }
+
     /**
      * Zmiana adresu serwera, gdy domyslny nie odpowiada.
      */
-    private boolean changeServer(){
+    private boolean changeServer() {
         String address = "";
         boolean valid_address = false;
-        while(!valid_address){
+        while (!valid_address) {
             address = JOptionPane.showInputDialog("Server unreachable. Give new ip:port");
-            if(address!= null){
-                if(!address.isEmpty())
+            if (address != null) {
+                if (!address.isEmpty())
                     valid_address = true;
-            }
-            else {
+            } else {
                 return false;
             }
         }
@@ -142,34 +151,37 @@ public class Client {
     /**
      * Sprawdza czy string zawiera znaki specjalne (inne niz a-z lub 0-9)
      * Jezeli nie zostana znalezione zwraca true.
+     *
      * @param s
      * @return
      */
-    private static boolean checkString(String s){
+    private static boolean checkString(String s) {
         Pattern p = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE);
         Matcher m = p.matcher(s);
         boolean b = m.find();
         return !b;
     }
-    public synchronized Contact findUser(int id){
-        for(Contact tmp: contacts_list)
-            if(tmp.getid() == id) {
+
+    public synchronized Contact findUser(int id) {
+        for (Contact tmp : contacts_list)
+            if (tmp.getid() == id) {
                 return tmp;
             }
         return null;
     }
 
-    private synchronized boolean recipientDisconnected(){
+    private synchronized boolean recipientDisconnected() {
         try {
             for (Contact elem : contacts_list)
                 if (recipient_id.equals(Integer.toString(elem.getid()))) {
                     return false;
                 }
-        } catch(NullPointerException e){
+        } catch (NullPointerException e) {
             return false;
         }
         return true;
     }
+
     public synchronized void buildContactsList(String s) {
         String[] contacts = s.split(";");
         contacts_list.clear();
@@ -178,18 +190,20 @@ public class Client {
             int id = Integer.parseInt(parts[0]);
             String tmp_name = parts[1];
             //System.out.println(id+" "+tmp_name);
-            if(!tmp_name.equals(name))
+            if (!tmp_name.equals(name))
                 contacts_list.add(new Contact(id, tmp_name));
             //if(recipientDisconnected())
-              //  display.print("user discnnected");
+            //  display.print("user discnnected");
         }
         display.printUsers();
     }
-    public synchronized void clearContactsList(){
+
+    public synchronized void clearContactsList() {
         contacts_list.clear();
         display.printUsers();
     }
-    private void displayInit(Client c){
+
+    private void displayInit(Client c) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 c.display = new ClientDisplay(c);
@@ -203,18 +217,17 @@ public class Client {
         client.name = "";
         boolean valid_name = false;
         String s = "Hello! Give nickname";
-        while(!valid_name){
+        while (!valid_name) {
             client.name = JOptionPane.showInputDialog(s);
-            if(client.name!= null){
-                if(!client.name.isEmpty()) {
-                    if(checkString(client.name))
+            if (client.name != null) {
+                if (!client.name.isEmpty()) {
+                    if (checkString(client.name))
                         valid_name = true;
                     else
                         s = "Give nickname (no special characters)";
                 } else
                     s = "Give nickname (cannot be empty)";
-            }
-            else {
+            } else {
                 return;
             }
         }
@@ -222,12 +235,12 @@ public class Client {
         client.display.requestFocusOnInput();
         client.display.changeTitle(client.name);
         try {
-            if(!client.makeConnection()) {
+            if (!client.makeConnection()) {
                 client.display.dispose();
                 return;
             }
-            client.output_stream.println("login"+client.name);
-            client.display.print("Witaj "+client.name+"!");
+            client.output_stream.println("login" + client.name);
+            client.display.print("Witaj " + client.name + "!");
             client.receive = new Thread(new Receive(client));
             client.receive.start();
         } catch (IOException e) {
