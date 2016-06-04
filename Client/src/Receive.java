@@ -16,7 +16,13 @@ public class Receive implements Runnable{
     private void receivedMsg(String msg){
         int id = Integer.parseInt(msg.substring(0,4));
         Contact tmp = client.findUser(id);
-        client.display.print(tmp.getName()+": "+msg.substring(4));
+        String s = tmp.getName()+": "+msg.substring(4);
+        if(id == Integer.parseInt(client.recipient_id)) {
+            client.display.print(s);
+            client.file_writer.write(s + "\n");
+        } else {
+            client.writeToFile(msg.substring(0,4), s);
+        }
     }
     @Override
     public void run(){

@@ -5,7 +5,6 @@
 
 import javax.swing.*;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -15,7 +14,7 @@ import java.util.List;
 public class Server {
 
     private final int PORT = 12412;
-    private final String HOST = "127.0.0.1";
+    //private final String HOST = "127.0.0.1";
     private ServerSocket server_socket;
 
     public List<User> users_list = new ArrayList<>();
@@ -23,18 +22,13 @@ public class Server {
     private boolean serverInit(){
         try
         {
-            InetSocketAddress address = new InetSocketAddress(HOST, PORT);
-            ServerSocket tmp_socket = new ServerSocket();
-            tmp_socket.bind(address);
-            this.server_socket = tmp_socket;
+            this.server_socket = new ServerSocket(PORT);
             System.out.println("Server running");
-            //display.print("Server running");
 
         }
         catch(IOException e)
         {
             System.out.println("Server not initialized");
-            //display.print("Server not initialized");
             return false;
         }
         return true;

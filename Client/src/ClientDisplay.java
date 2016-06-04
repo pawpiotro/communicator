@@ -8,6 +8,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.DefaultCaret;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 
 public class ClientDisplay extends JFrame{
     private Client client;
@@ -30,7 +32,8 @@ public class ClientDisplay extends JFrame{
             if(!message.isEmpty()) {
                 input.setText("");
                 client.output_stream.println("nrmsg"+client.recipient_id+message);
-                print(message);
+                print(client.name+": "+message);
+                client.file_writer.write(client.name+": "+message+"\n");
             }
         }
         @Override
@@ -40,6 +43,7 @@ public class ClientDisplay extends JFrame{
                 if(!message.isEmpty()) {
                     client.output_stream.println("nrmsg"+client.recipient_id+message);
                     print(client.name+": "+message);
+                    client.file_writer.write(client.name+": "+message+"\n");
                 }
             }
         }
@@ -128,13 +132,26 @@ public class ClientDisplay extends JFrame{
             public void windowClosing(WindowEvent e)
             {
                 client.output_stream.println("close");
+                client.closeFile();
                 client.receive.interrupt();
                 e.getWindow().dispose();
+                try {
+                    client.deleteDirectory(new File("./Client/history/" + client.name));
+                } catch(IOException e1){
+                    e1.printStackTrace();
+                }
                 System.exit(0);
             }
         });
     }
 
+    public void changeTitle(String s){
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                setTitle("client - "+s);
+            }
+        });
+    }
     /**
      * wyswietla wiadomosc w oknie programu
      * @param message wiadomosc do wyswietlenia
@@ -143,6 +160,13 @@ public class ClientDisplay extends JFrame{
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 area.append(message+"\n");
+            }
+        });
+    }
+    public void clean(){
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                area.setText("");
             }
         });
     }

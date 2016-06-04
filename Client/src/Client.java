@@ -1,8 +1,5 @@
 import javax.swing.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -22,9 +19,12 @@ public class Client {
     public BufferedReader input_stream;
     public PrintWriter output_stream;
     public Thread receive;
+
     public List<Contact> contacts_list =  new ArrayList<>();
     public String name;
     public String recipient_id = null;
+
+    public PrintWriter file_writer;
     /**
      * Ustanawia polaczenie z serwerem.
      * @throws IOException
@@ -55,16 +55,63 @@ public class Client {
     }
     /**Zmienia adresata. Wybór z listy
      *
-     * @param name
+     * @param s
      */
-    public void changeRecipient(String name){
+    public void changeRecipient(String s){
+        closeFile();
         for(Contact tmp: contacts_list){
-            if(name.equals(tmp.getName())){
+            if(s.equals(tmp.getName())){
                 display.unlock();
                 recipient_id = String.format("%4s", Integer.toString(tmp.getid())).replace(' ', '0');
+                openFile();
+                //msg_history = new File(path+recipient_id);
                 return;
             }
         }
+    }
+    private void openFile(){
+        String path = "./Client/history/"+name+"/"+recipient_id+".txt";
+        File f = new File(path);
+        f.getParentFile().mkdirs();
+        try {
+            file_writer = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try (BufferedReader br = new BufferedReader(new FileReader(f))) {
+            display.clean();
+            for (String line; (line = br.readLine()) != null; ) {
+                display.print(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public void closeFile(){
+        String path = "./Client/history/"+name+"/"+recipient_id+".txt";
+        File f = new File(path);
+        if(f.isFile())
+            file_writer.close();
+    }
+    public void writeToFile(String id, String s){
+        String path = "./Client/history/"+name+"/"+id+".txt";
+        File f = new File(path);
+        f.getParentFile().mkdirs();
+        try {
+            PrintWriter tmp_file_writer = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
+            tmp_file_writer.write(s+"\n");
+            tmp_file_writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    void deleteDirectory(File f)throws IOException {
+        if (f.isDirectory()) {
+            for (File c : f.listFiles())
+                deleteDirectory(c);
+        }
+        if (!f.delete())
+            throw new FileNotFoundException("Failed to delete file: " + f);
     }
     /**
      * Zmiana adresu serwera, gdy domyslny nie odpowiada.
@@ -126,7 +173,7 @@ public class Client {
             String[] parts = tmp.split(":");
             int id = Integer.parseInt(parts[0]);
             String tmp_name = parts[1];
-            System.out.println(id+" "+tmp_name);
+            //System.out.println(id+" "+tmp_name);
             if(!tmp_name.equals(name))
                 contacts_list.add(new Contact(id, tmp_name));
             //if(recipientDisconnected())
@@ -152,6 +199,7 @@ public class Client {
             }
         });
     }
+
     public static void main(String[] args) {
         Client client = new Client();
         client.displayInit(client);
@@ -175,6 +223,7 @@ public class Client {
         }
         client.display.setVisible(true);
         client.display.requestFocusOnInput();
+        client.display.changeTitle(client.name);
         try {
             if(!client.makeConnection()) {
                 client.display.dispose();
