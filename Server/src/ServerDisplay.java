@@ -11,7 +11,7 @@ import javax.swing.text.DefaultCaret;
 import java.awt.*;
 
 public class ServerDisplay extends JFrame{
-
+    private Server server;
     private JTextArea area2 = new JTextArea();
     private JTextArea area = new JTextArea();
     private JScrollPane pane = new JScrollPane(area);
@@ -27,7 +27,8 @@ public class ServerDisplay extends JFrame{
         System.setOut(print_stream);
         System.setErr(print_stream);
     }
-    public ServerDisplay(){
+    public ServerDisplay(Server s){
+        server = s;
         Color my = new Color(10,225,225);
         //PANEL
         panel.setLayout(new GridLayout(1,2));
@@ -71,7 +72,7 @@ public class ServerDisplay extends JFrame{
             @Override
             public synchronized void windowClosing(WindowEvent e)
             {
-                for(User elem: Server.users_list)
+                for(User elem: server.users_list)
                     elem.send("close");
                 System.exit(0);
             }
@@ -96,7 +97,7 @@ public class ServerDisplay extends JFrame{
             public void run() {
                 area2.setText("");
                 area2.append("ID    Name        Address\n");
-                for (User elem : Server.users_list) {
+                for (User elem : server.users_list) {
                     area2.append(elem.getid() + "       " + elem.getName() + "            " + elem.getAddress() + "\n");
                 }
             }

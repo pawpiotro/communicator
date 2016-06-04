@@ -10,7 +10,7 @@ import javax.swing.text.DefaultCaret;
 import java.awt.*;
 
 public class ClientDisplay extends JFrame{
-
+    private Client client;
     private JTextArea area = new JTextArea();
     private JList list = new JList();
     private JTextArea input = new JTextArea();
@@ -29,7 +29,7 @@ public class ClientDisplay extends JFrame{
             String message = input.getText();
             if(!message.isEmpty()) {
                 input.setText("");
-                Client.output_stream.println("nrmsg"+Client.recipient_id+message);
+                client.output_stream.println("nrmsg"+client.recipient_id+message);
                 print(message);
             }
         }
@@ -38,8 +38,8 @@ public class ClientDisplay extends JFrame{
             if (k.getKeyCode() == KeyEvent.VK_ENTER) {
                 String message = input.getText();
                 if(!message.isEmpty()) {
-                    Client.output_stream.println("nrmsg"+Client.recipient_id+message);
-                    print(Client.name+": "+message);
+                    client.output_stream.println("nrmsg"+client.recipient_id+message);
+                    print(client.name+": "+message);
                 }
             }
         }
@@ -58,14 +58,15 @@ public class ClientDisplay extends JFrame{
         public void valueChanged(ListSelectionEvent e){
             lock();
             if(!list.isSelectionEmpty())
-                Client.changeRecipient(list.getSelectedValue().toString());
+                client.changeRecipient(list.getSelectedValue().toString());
         }
     }
 
     public void requestFocusOnInput(){
         input.requestFocusInWindow();
     }
-    public ClientDisplay(){
+    public ClientDisplay(Client c){
+        client = c;
         Color my = new Color(50,150,225);
         //MAIN PANEL
         main_panel.setBackground(my);
@@ -126,8 +127,8 @@ public class ClientDisplay extends JFrame{
             @Override
             public void windowClosing(WindowEvent e)
             {
-                Client.output_stream.println("close");
-                Client.receive.interrupt();
+                client.output_stream.println("close");
+                client.receive.interrupt();
                 e.getWindow().dispose();
                 System.exit(0);
             }
@@ -162,9 +163,9 @@ public class ClientDisplay extends JFrame{
     public void printUsers(){
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                String[] contacts = new String[Client.contacts_list.size()];
-                for(int i = 0; i < Client.contacts_list.size(); i++) {
-                    contacts[i] = Client.contacts_list.get(i).getName();
+                String[] contacts = new String[client.contacts_list.size()];
+                for(int i = 0; i < client.contacts_list.size(); i++) {
+                    contacts[i] = client.contacts_list.get(i).getName();
                 }
                 list.setListData(contacts);
             }

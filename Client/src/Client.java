@@ -15,21 +15,21 @@ import java.util.regex.Pattern;
  */
 
 public class Client {
-    private static int port = 12412; //default
-    private static String host = "127.0.0.1";  // default
-    public static ClientDisplay display = new ClientDisplay();
-    private static Socket server_socket;
-    public static BufferedReader input_stream;
-    public static PrintWriter output_stream;
-    public static Thread receive;
-    public static List<Contact> contacts_list =  new ArrayList<>();
-    public static String name;
-    public static String recipient_id = null;
+    private int port = 12412; //default
+    private String host = "127.0.0.1";  // default
+    public  ClientDisplay display;// = new ClientDisplay();
+    private Socket server_socket;
+    public BufferedReader input_stream;
+    public PrintWriter output_stream;
+    public Thread receive;
+    public List<Contact> contacts_list =  new ArrayList<>();
+    public String name;
+    public String recipient_id = null;
     /**
      * Ustanawia polaczenie z serwerem.
      * @throws IOException
      */
-    private static boolean makeConnection() throws IOException{
+    private boolean makeConnection() throws IOException{
         boolean connected = false;
         while(!connected) {
             try {
@@ -44,7 +44,7 @@ public class Client {
         output_stream = new PrintWriter(server_socket.getOutputStream(),true);
         return true;
     }
-    public static void disconnectFromServer(){
+    public void disconnectFromServer(){
         try {
             display.print("Connection to server lost.");
             display.lock();
@@ -57,7 +57,7 @@ public class Client {
      *
      * @param name
      */
-    public static void changeRecipient(String name){
+    public void changeRecipient(String name){
         for(Contact tmp: contacts_list){
             if(name.equals(tmp.getName())){
                 display.unlock();
@@ -69,7 +69,7 @@ public class Client {
     /**
      * Zmiana adresu serwera, gdy domyslny nie odpowiada.
      */
-    private static boolean changeServer(){
+    private boolean changeServer(){
         String address = "";
         boolean valid_address = false;
         while(!valid_address){
@@ -87,13 +87,20 @@ public class Client {
         port = Integer.parseInt(parts[1]);
         return true;
     }
+
+    /**
+     * Sprawdza czy string zawiera znaki specjalne (inne niz a-z lub 0-9)
+     * Jezeli nie zostana znalezione zwraca true.
+     * @param s
+     * @return
+     */
     private static boolean checkString(String s){
         Pattern p = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE);
         Matcher m = p.matcher(s);
         boolean b = m.find();
         return !b;
     }
-    public synchronized static Contact findUser(int id){
+    public synchronized Contact findUser(int id){
         for(Contact tmp: contacts_list)
             if(tmp.getid() == id) {
                 return tmp;
@@ -101,7 +108,7 @@ public class Client {
         return null;
     }
 
-    private static synchronized boolean recipientDisconnected(){
+    private synchronized boolean recipientDisconnected(){
         try {
             for (Contact elem : contacts_list)
                 if (recipient_id.equals(Integer.toString(elem.getid()))) {
@@ -112,7 +119,7 @@ public class Client {
         }
         return true;
     }
-    public static synchronized void buildContactsList(String s) {
+    public synchronized void buildContactsList(String s) {
         String[] contacts = s.split(";");
         contacts_list.clear();
         for (String tmp : contacts) {
@@ -122,8 +129,8 @@ public class Client {
             System.out.println(id+" "+tmp_name);
             if(!tmp_name.equals(name))
                 contacts_list.add(new Contact(id, tmp_name));
-            if(recipientDisconnected())
-                display.print("user discnnected");
+            //if(recipientDisconnected())
+              //  display.print("user discnnected");
             /*if(recipientDisconnected()){
                 recipient_id = null;
                 display.print("User disconnected");
@@ -132,17 +139,30 @@ public class Client {
             /*if (!found && (!name.equals(Client.name)))
                 contacts_list.add(new Contact(id, name));*/
         }
+        display.printUsers();
     }
-
+    public synchronized void clearContactsList(){
+        contacts_list.clear();
+        display.printUsers();
+    }
+    private void displayInit(Client c){
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                c.display = new ClientDisplay(c);
+            }
+        });
+    }
     public static void main(String[] args) {
-        name = "";
+        Client client = new Client();
+        client.displayInit(client);
+        client.name = "";
         boolean valid_name = false;
         String s = "Hello! Give nickname";
         while(!valid_name){
-            name = JOptionPane.showInputDialog(s);
-            if(name!= null){
-                if(!name.isEmpty()) {
-                    if(checkString(name))
+            client.name = JOptionPane.showInputDialog(s);
+            if(client.name!= null){
+                if(!client.name.isEmpty()) {
+                    if(checkString(client.name))
                         valid_name = true;
                     else
                         s = "Give nickname (no special characters)";
@@ -153,17 +173,17 @@ public class Client {
                 return;
             }
         }
-        display.setVisible(true);
-        display.requestFocusOnInput();
+        client.display.setVisible(true);
+        client.display.requestFocusOnInput();
         try {
-            if(!makeConnection()) {
-                display.dispose();
+            if(!client.makeConnection()) {
+                client.display.dispose();
                 return;
             }
-            output_stream.println("login"+name);
-            display.print("Witaj "+name+"!");
-            receive = new Thread(new Receive(input_stream));
-            receive.start();
+            client.output_stream.println("login"+client.name);
+            client.display.print("Witaj "+client.name+"!");
+            client.receive = new Thread(new Receive(client));
+            client.receive.start();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -9,12 +9,13 @@ import java.net.Socket;
  */
 
 public class Connection implements Runnable {
-
+    private Server server;
     private int client_ID;
     private Socket socket;
     private BufferedReader input_stream;
     private PrintWriter output_stream;
-    public Connection(int id, Socket socket) throws IOException {
+    public Connection(int id, Socket socket, Server s) throws IOException {
+        this.server = s;
         this.client_ID = id;
         this.socket = socket;
         this.input_stream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -30,17 +31,17 @@ public class Connection implements Runnable {
             return null;
     }
     private boolean nameAlreadyTaken(String client_name){
-        for(User elem: Server.users_list)
+        for(User elem: server.users_list)
             if(elem.getName().equals(client_name))
                 return true;
         return false;
     }
     private synchronized void addUser(User usr){
-        Server.users_list.add(usr);
+        server.users_list.add(usr);
     }
     private void passMsg(String msg){
         int id = Integer.parseInt(msg.substring(0,4));
-        User tmp = Server.findUser(id);
+        User tmp = server.findUser(id);
         String s = String.format("%4s", Integer.toString(client_ID)).replace(' ', '0');
         tmp.send("nrmsg"+s+msg.substring(4));
         //System.out.println(client_ID + " to "+id+": " + msg.substring(4));
@@ -59,7 +60,7 @@ public class Connection implements Runnable {
                     passMsg(msg);
                     break;
                 case "close":
-                    Server.disconnect(client_ID);
+                    server.disconnect(client_ID);
                     return false;
             }
         }
@@ -85,13 +86,13 @@ public class Connection implements Runnable {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            Server.disconnect(client_ID);
+            server.disconnect(client_ID);
         }
         System.out.println("New client connected from "+ address);
         User new_user = new User(client_ID, client_name, address, socket, output_stream);
         addUser(new_user);
-        Server.display.printUsers();
-        Server.distributeList();
+        server.display.printUsers();
+        server.distributeList();
         while(true) {
             try {
                 if(!readMsg(client_name))
@@ -106,7 +107,7 @@ public class Connection implements Runnable {
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
-                Server.disconnect(client_ID);
+                server.disconnect(client_ID);
             }
         }
     }

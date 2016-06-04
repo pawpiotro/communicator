@@ -7,14 +7,16 @@ import java.io.IOException;
 
 public class Receive implements Runnable{
     private BufferedReader stream;
-    public Receive(BufferedReader stream){
-        this.stream = stream;
+    private Client client;
+    public Receive(Client c){
+        this.client = c;
+        this.stream = c.input_stream;
     }
 
     private void receivedMsg(String msg){
         int id = Integer.parseInt(msg.substring(0,4));
-        Contact tmp = Client.findUser(id);
-        Client.display.print(tmp.getName()+": "+msg.substring(4));
+        Contact tmp = client.findUser(id);
+        client.display.print(tmp.getName()+": "+msg.substring(4));
     }
     @Override
     public void run(){
@@ -33,21 +35,21 @@ public class Receive implements Runnable{
                                 receivedMsg(msg);
                                 break;
                             case "close":
-                                Client.disconnectFromServer();
+                                client.disconnectFromServer();
+                                client.clearContactsList();
                                 return;
                             case "usrls":
-                                Client.buildContactsList(msg);
-                                Client.display.printUsers();
+                                client.buildContactsList(msg);
                                 break;
                             case "chngn":
-                                Client.display.print("Name already taken. Changed to " + msg);
-                                Client.name = msg;
+                                client.display.print("Name already taken. Changed to " + msg);
+                                client.name = msg;
                                 break;
                         }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Client.disconnectFromServer();
+                    client.disconnectFromServer();
                 } catch (NullPointerException e3) {
                     e3.printStackTrace();
 

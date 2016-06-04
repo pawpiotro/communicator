@@ -14,12 +14,12 @@ import java.util.List;
 
 public class Server {
 
-    private static final int PORT = 12412;
-    private static final String HOST = "127.0.0.1";
+    private final int PORT = 12412;
+    private final String HOST = "127.0.0.1";
     private ServerSocket server_socket;
 
-    public static List<User> users_list = new ArrayList<>();
-    public static ServerDisplay display = new ServerDisplay();
+    public List<User> users_list = new ArrayList<>();
+    public ServerDisplay display;// = new ServerDisplay();
     private boolean serverInit(){
         try
         {
@@ -40,7 +40,7 @@ public class Server {
         return true;
     }
 
-    public synchronized static void distributeList(){
+    public synchronized void distributeList(){
         String list = "usrls";
         for(User usr: users_list) {
             list = list+usr.getid()+":"+usr.getName()+";";
@@ -49,7 +49,7 @@ public class Server {
             elem.send(list);
         }
     }
-    public synchronized static User findUser(int id){
+    public synchronized User findUser(int id){
         for(User tmp: users_list)
             if(tmp.getid() == id) {
                 return tmp;
@@ -63,7 +63,7 @@ public class Server {
             e.printStackTrace();
         }
     }
-    public synchronized static void disconnect(int id){
+    public synchronized void disconnect(int id){
         try {
             User usr = findUser(id);
             String name = usr.getName();
@@ -80,25 +80,27 @@ public class Server {
         }
     }
 
-    private static void displayInit(){
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                display = new ServerDisplay();
+    private void displayInit(Server s){
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                s.display = new ServerDisplay(s);
         }
-    });
+        });
     }
     public static void main(String[] args) {
+        Server server = new Server();
+        server.display = new ServerDisplay(server);
+        //server.displayInit(server);
         boolean running = true;
         int client_seq = 0;
-        Server server = new Server();
         if(server.serverInit())
             while(running) {
                 try {
                     Socket tmp_socket = server.server_socket.accept();
-                    Thread tmp = new Thread(new Connection(client_seq,tmp_socket));
+                    Thread tmp = new Thread(new Connection(client_seq,tmp_socket,server));
                     tmp.start();
                     client_seq++;
-                    display.printUsers();
+                    server.display.printUsers();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
