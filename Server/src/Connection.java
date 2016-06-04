@@ -38,7 +38,14 @@ public class Connection implements Runnable {
     private synchronized void addUser(User usr){
         Server.users_list.add(usr);
     }
-    private synchronized boolean readMsg(String client_name) throws IOException{
+    private void passMsg(String msg){
+        int id = Integer.parseInt(msg.substring(0,4));
+        User tmp = Server.findUser(id);
+        String s = String.format("%4s", Integer.toString(client_ID)).replace(' ', '0');
+        tmp.send("nrmsg"+s+msg.substring(4));
+        //System.out.println(client_ID + " to "+id+": " + msg.substring(4));
+    }
+    private boolean readMsg(String client_name) throws IOException{
         String line;
         if((line = input_stream.readLine()) != null){
             String header = line.substring(0, 5);
@@ -49,7 +56,7 @@ public class Connection implements Runnable {
                 msg = "elo";
             switch (header) {
                 case "nrmsg":
-                    System.out.println(client_name + ": " + msg);
+                    passMsg(msg);
                     break;
                 case "close":
                     Server.disconnect(client_ID);
@@ -78,6 +85,7 @@ public class Connection implements Runnable {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            Server.disconnect(client_ID);
         }
         System.out.println("New client connected from "+ address);
         User new_user = new User(client_ID, client_name, address, socket, output_stream);
@@ -98,6 +106,7 @@ public class Connection implements Runnable {
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                Server.disconnect(client_ID);
             }
         }
     }

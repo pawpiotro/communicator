@@ -6,7 +6,7 @@
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.swing.JTextArea;
+import javax.swing.*;
 
 public class CustomOutputStream extends OutputStream {
     private JTextArea textArea;
@@ -17,7 +17,11 @@ public class CustomOutputStream extends OutputStream {
 
     @Override
     public void write(int b) throws IOException {
-        textArea.append(String.valueOf((char)b));
-        textArea.setCaretPosition(textArea.getDocument().getLength());
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                textArea.append(String.valueOf((char) b));
+                textArea.setCaretPosition(textArea.getDocument().getLength());
+            }
+        });
     }
 }

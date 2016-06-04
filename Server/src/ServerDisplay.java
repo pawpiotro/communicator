@@ -65,13 +65,14 @@ public class ServerDisplay extends JFrame{
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         add(panel);
+        setVisible(true);
         addWindowListener(new WindowAdapter()
         {
             @Override
             public synchronized void windowClosing(WindowEvent e)
             {
                 for(User elem: Server.users_list)
-                    elem.output_stream.println("close");
+                    elem.send("close");
                 System.exit(0);
             }
         });
@@ -82,28 +83,31 @@ public class ServerDisplay extends JFrame{
      * @param message wiadomosc do wyswietlenia
      */
     public void print(String message){
-        area.append(message+"\n");
-        //area.setCaretPosition(area.getDocument().getLength());
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                area.append(message+"\n");
+                //area.setCaretPosition(area.getDocument().getLength());
+            }
+        });
     }
 
     public synchronized void printUsers(){
-        area2.setText("");
-        area2.append("ID    Name        Address\n");
-        for(User elem : Server.users_list) {
-            area2.append(elem.getid() + "       " + elem.getName()+"            "+elem.getAddress()+"\n");
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                area2.setText("");
+                area2.append("ID    Name        Address\n");
+                for (User elem : Server.users_list) {
+                    area2.append(elem.getid() + "       " + elem.getName() + "            " + elem.getAddress() + "\n");
+                }
+            }
+        });
     }
 
     /*public static void main(String[] args) {
-
-        EventQueue.invokeLater(new Runnable() {
-
+        SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                ServerDisplay  frame = new ServerDisplay();
-                //System.out.println("elo");
-                frame.setVisible(true);
-                for(int i = 0;i < 100; i++)
-                    print("elo");
+                ServerDisplay display = new ServerDisplay();
+                display.setVisible(true);
             }
         });
     }*/

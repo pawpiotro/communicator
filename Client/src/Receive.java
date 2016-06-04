@@ -11,22 +11,10 @@ public class Receive implements Runnable{
         this.stream = stream;
     }
 
-    private void buildContactsList(String s){
-        String[] contacts = s.split(";");
-        boolean found;
-        for(String tmp: contacts){
-            found = false;
-            String[] parts = tmp.split(":");
-            int id = Integer.parseInt(parts[0]);
-            String name = parts[1];
-            for(Contact elem: Client.contacts_list)
-                if(elem.getid() == id){
-                    found = true;
-                    break;
-                }
-            if(!found && (!name.equals(Client.name)))
-                Client.contacts_list.add(new Contact(id,name));
-        }
+    private void receivedMsg(String msg){
+        int id = Integer.parseInt(msg.substring(0,4));
+        Contact tmp = Client.findUser(id);
+        Client.display.print(tmp.getName()+": "+msg.substring(4));
     }
     @Override
     public void run(){
@@ -42,15 +30,13 @@ public class Receive implements Runnable{
                             msg = "";
                         switch (header) {
                             case "nrmsg":
-                                Client.display.print(msg);
+                                receivedMsg(msg);
                                 break;
                             case "close":
-                                Client.display.print("Connection to server lost.");
-                                Client.display.lock();
                                 Client.disconnectFromServer();
                                 return;
                             case "usrls":
-                                buildContactsList(msg);
+                                Client.buildContactsList(msg);
                                 Client.display.printUsers();
                                 break;
                             case "chngn":
@@ -61,8 +47,10 @@ public class Receive implements Runnable{
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                    Client.disconnectFromServer();
                 } catch (NullPointerException e3) {
                     e3.printStackTrace();
+
                 }
 
         }

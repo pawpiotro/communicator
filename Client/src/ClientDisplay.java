@@ -4,6 +4,8 @@
 
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.DefaultCaret;
 import java.awt.*;
 
@@ -18,15 +20,16 @@ public class ClientDisplay extends JFrame{
     private JScrollPane pane = new JScrollPane(area);
     private JScrollPane pane2 = new JScrollPane(list);
     private JButton send = new JButton("Send");
-    private sendAction send_message = new sendAction();
+    private SendAction send_message = new SendAction();
+    private SelectContact select_contact = new SelectContact();
 
-    private class sendAction implements ActionListener, KeyListener {
+    private class SendAction implements ActionListener, KeyListener {
         @Override
         public void actionPerformed(ActionEvent e){
             String message = input.getText();
             if(!message.isEmpty()) {
                 input.setText("");
-                Client.output_stream.println("nrmsg"+message);
+                Client.output_stream.println("nrmsg"+Client.recipient_id+message);
                 print(message);
             }
         }
@@ -35,7 +38,7 @@ public class ClientDisplay extends JFrame{
             if (k.getKeyCode() == KeyEvent.VK_ENTER) {
                 String message = input.getText();
                 if(!message.isEmpty()) {
-                    Client.output_stream.println("nrmsg"+message);
+                    Client.output_stream.println("nrmsg"+Client.recipient_id+message);
                     print(Client.name+": "+message);
                 }
             }
@@ -48,6 +51,15 @@ public class ClientDisplay extends JFrame{
         }
         @Override
         public void keyTyped(KeyEvent k){}
+    }
+
+    private class SelectContact implements ListSelectionListener{
+        @Override
+        public void valueChanged(ListSelectionEvent e){
+            lock();
+            if(!list.isSelectionEmpty())
+                Client.changeRecipient(list.getSelectedValue().toString());
+        }
     }
 
     public void requestFocusOnInput(){
@@ -87,7 +99,7 @@ public class ClientDisplay extends JFrame{
         input.setLineWrap(true);
         input.setWrapStyleWord(true);
         input.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 2));
-        input.setEditable(true);
+        input.setEditable(false);
         input.setPreferredSize(new Dimension(180, 36));
         input.addKeyListener(send_message);
         //SEND BUTTON
@@ -97,7 +109,8 @@ public class ClientDisplay extends JFrame{
         list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         list.setLayoutOrientation(JList.VERTICAL_WRAP);
         list.setVisibleRowCount(-1);
-
+        list.addListSelectionListener(select_contact);
+        list.setFixedCellWidth(156);
         initUI();
     }
 
@@ -126,16 +139,35 @@ public class ClientDisplay extends JFrame{
      * @param message wiadomosc do wyswietlenia
      */
     public void print(String message){
-        area.append(message+"\n");
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                area.append(message+"\n");
+            }
+        });
     }
     public void lock(){
-        input.setEditable(false);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                input.setEditable(false);
+            }
+        });
+    }
+    public void unlock(){
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                input.setEditable(true);
+            }
+        });
     }
     public void printUsers(){
-        String[] contacts = new String[Client.contacts_list.size()];
-        for(int i = 0; i < Client.contacts_list.size(); i++) {
-            contacts[i] = Client.contacts_list.get(i).getName();
-        }
-        list.setListData(contacts);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                String[] contacts = new String[Client.contacts_list.size()];
+                for(int i = 0; i < Client.contacts_list.size(); i++) {
+                    contacts[i] = Client.contacts_list.get(i).getName();
+                }
+                list.setListData(contacts);
+            }
+        });
     }
 }

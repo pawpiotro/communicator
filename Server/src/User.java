@@ -12,8 +12,8 @@ public class User {
     private int id;
     private String name;
     private String address;
-    public Socket socket;
-    public PrintWriter output_stream;
+    private Socket socket;
+    private PrintWriter output_stream;
     public User(int id, String name, String address, Socket socket, PrintWriter output){
         this.id = id;
         this.name = name;
@@ -31,6 +31,7 @@ public class User {
     public String getAddress(){
         return address;
     }
-    /*public Socket getSocket(){ return socket;}
-    public PrintWriter getOutput(){ return output_stream;}*/
+    public Socket getSocket(){ return socket;}
+    public void closeSocket() throws IOException { socket.close();}
+    public void send(String s){ output_stream.println(s);}
 }

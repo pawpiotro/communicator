@@ -24,6 +24,7 @@ public class Client {
     public static Thread receive;
     public static List<Contact> contacts_list =  new ArrayList<>();
     public static String name;
+    public static String recipient_id = null;
     /**
      * Ustanawia polaczenie z serwerem.
      * @throws IOException
@@ -45,9 +46,24 @@ public class Client {
     }
     public static void disconnectFromServer(){
         try {
+            display.print("Connection to server lost.");
+            display.lock();
             server_socket.close();
         } catch(IOException e){
             e.printStackTrace();
+        }
+    }
+    /**Zmienia adresata. Wybór z listy
+     *
+     * @param name
+     */
+    public static void changeRecipient(String name){
+        for(Contact tmp: contacts_list){
+            if(name.equals(tmp.getName())){
+                display.unlock();
+                recipient_id = String.format("%4s", Integer.toString(tmp.getid())).replace(' ', '0');
+                return;
+            }
         }
     }
     /**
@@ -77,6 +93,47 @@ public class Client {
         boolean b = m.find();
         return !b;
     }
+    public synchronized static Contact findUser(int id){
+        for(Contact tmp: contacts_list)
+            if(tmp.getid() == id) {
+                return tmp;
+            }
+        return null;
+    }
+
+    private static synchronized boolean recipientDisconnected(){
+        try {
+            for (Contact elem : contacts_list)
+                if (recipient_id.equals(Integer.toString(elem.getid()))) {
+                    return false;
+                }
+        } catch(NullPointerException e){
+            return false;
+        }
+        return true;
+    }
+    public static synchronized void buildContactsList(String s) {
+        String[] contacts = s.split(";");
+        contacts_list.clear();
+        for (String tmp : contacts) {
+            String[] parts = tmp.split(":");
+            int id = Integer.parseInt(parts[0]);
+            String tmp_name = parts[1];
+            System.out.println(id+" "+tmp_name);
+            if(!tmp_name.equals(name))
+                contacts_list.add(new Contact(id, tmp_name));
+            if(recipientDisconnected())
+                display.print("user discnnected");
+            /*if(recipientDisconnected()){
+                recipient_id = null;
+                display.print("User disconnected");
+                display.lock();
+            }*/
+            /*if (!found && (!name.equals(Client.name)))
+                contacts_list.add(new Contact(id, name));*/
+        }
+    }
+
     public static void main(String[] args) {
         name = "";
         boolean valid_name = false;

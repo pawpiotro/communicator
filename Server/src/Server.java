@@ -3,10 +3,13 @@
  * Nasłuchuje nowych połączeń od klientów i zestawia klientów. Tworzy wątki dla każdego połączenia.
  */
 
-import java.io.*;
-import java.util.List;
+import javax.swing.*;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
-import java.net.*;
+import java.util.List;
 
 
 public class Server {
@@ -17,7 +20,7 @@ public class Server {
 
     public static List<User> users_list = new ArrayList<>();
     public static ServerDisplay display = new ServerDisplay();
-    private void serverInit(){
+    private boolean serverInit(){
         try
         {
             InetSocketAddress address = new InetSocketAddress(HOST, PORT);
@@ -25,14 +28,16 @@ public class Server {
             tmp_socket.bind(address);
             this.server_socket = tmp_socket;
             System.out.println("Server running");
+            //display.print("Server running");
 
         }
         catch(IOException e)
         {
             System.out.println("Server not initialized");
-            //exit(1);
+            //display.print("Server not initialized");
+            return false;
         }
-
+        return true;
     }
 
     public synchronized static void distributeList(){
@@ -41,7 +46,7 @@ public class Server {
             list = list+usr.getid()+":"+usr.getName()+";";
         }
         for(User elem: users_list){
-            elem.output_stream.println(list);
+            elem.send(list);
         }
     }
     public synchronized static User findUser(int id){
@@ -65,31 +70,41 @@ public class Server {
             if(name.equals(null))
                 name = "Unknown user";
             String address = usr.getAddress();
-            usr.socket.close();
+            usr.closeSocket();
             users_list.remove(usr);
             System.out.println(name+" ("+address+") disconnected");
             display.printUsers();
+            distributeList();
         } catch (IOException e){
             e.printStackTrace();
         }
+    }
+
+    private static void displayInit(){
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                display = new ServerDisplay();
+        }
+    });
     }
     public static void main(String[] args) {
         boolean running = true;
         int client_seq = 0;
         Server server = new Server();
-        server.serverInit();
-        display.setVisible(true);
-        while(running) {
-            try {
-                Socket tmp_socket = server.server_socket.accept();
-                Thread tmp = new Thread(new Connection(client_seq,tmp_socket));
-                tmp.start();
-                client_seq++;
-                display.printUsers();
-            } catch (IOException e) {
-                e.printStackTrace();
+        if(server.serverInit())
+            while(running) {
+                try {
+                    Socket tmp_socket = server.server_socket.accept();
+                    Thread tmp = new Thread(new Connection(client_seq,tmp_socket));
+                    tmp.start();
+                    client_seq++;
+                    display.printUsers();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        }
+        else
+            System.out.println("Server already started.");
     }
 
 }
