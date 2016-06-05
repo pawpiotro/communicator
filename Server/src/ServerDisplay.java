@@ -18,6 +18,11 @@ public class ServerDisplay extends JFrame {
     private JScrollPane pane2 = new JScrollPane(area2);
     //private PrintStream standard_out = System.out; //stary output
 
+    /**
+     * Ustawia niestandardowy strumień, by wypisywał komunikaty do wybranego pola w oknie programu.
+     *
+     * @param area wybrane pole
+     */
     private void setCustomOutput(JTextArea area) {
         PrintStream print_stream = new PrintStream(new CustomOutputStream(area));
         //podmiana standardowego strumienia
@@ -77,6 +82,7 @@ public class ServerDisplay extends JFrame {
 
     /**
      * Wyświetla wiadomość w oknie progrmau.
+     *
      * @param message wiadomość do wyświetlenia.
      */
     public void print(String message) {

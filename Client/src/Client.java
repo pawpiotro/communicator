@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 public class Client {
     private int port = 12412; //default
     private String host = "127.0.0.1";  // default
-    public ClientDisplay display;// = new ClientDisplay();
+    public ClientDisplay display;
     private Socket server_socket;
     public BufferedReader input_stream;
     public PrintWriter output_stream;
@@ -30,7 +30,7 @@ public class Client {
     public PrintWriter file_writer;
 
     /**
-     * Ustanawia polaczenie z serwerem.
+     * Ustanawia połączenie z serwerem.
      *
      * @throws IOException
      */
@@ -66,6 +66,7 @@ public class Client {
 
     /**
      * Zmienia adresata.
+     *
      * @param s nazwa użytkownika wybranego z listy kontaktów
      */
     public void changeRecipient(String s) {
@@ -120,8 +121,9 @@ public class Client {
     /**
      * Jeśli odebrana przez receiveMsg() wiadomość nie została wysłana
      * przez aktualnie wybranego rozmówcę, jest ona zapisywana do pliku.
+     *
      * @param id ID nadawcy wiadomości
-     * @param s Wiadomość
+     * @param s  Wiadomość
      */
     public void writeToFile(String id, String s) {
         String path = "./Client/history/" + name + "/" + id + ".txt";
@@ -140,6 +142,7 @@ public class Client {
      * W tej wersji programu po zamknięciu usuwane są pliki z historią rozmowy,
      * ponieważ ID użytkowników są nadawane dynamicznie i użytkownik po ponownym zalogowaniu
      * nie zobaczy swojej historii rozmowy. Funkcja zostanie rozwinięta w kolejnych wersjach programu.
+     *
      * @param f ścieżka folderu do usunięcia
      * @throws IOException
      */
@@ -158,24 +161,55 @@ public class Client {
     private boolean changeServer() {
         String address = "";
         boolean valid_address = false;
+        String[] parts;
+        String s = "Server unreachable. Give new ip:port";
         while (!valid_address) {
-            address = JOptionPane.showInputDialog("Server unreachable. Give new ip:port");
+            address = JOptionPane.showInputDialog(s);
             if (address != null) {
                 if (!address.isEmpty())
-                    valid_address = true;
+                    if (address.contains(":")) {
+                        try {
+                            parts = address.split(":");
+                            host = parts[0];
+                            port = Integer.parseInt(parts[1]);
+                            if (checkAddress(host))
+                                valid_address = true;
+                            else
+                                s = "Invalid address format";
+                        } catch (ArrayIndexOutOfBoundsException e) {
+                            s = "Invalid input value";
+                        } catch (NumberFormatException e2) {
+                            s = "Invalid port value";
+                        }
+                    } else {
+                        s = "Invalid address format.";
+                    }
             } else {
                 return false;
             }
         }
-        String[] parts = address.split(":");
-        host = parts[0];
-        port = Integer.parseInt(parts[1]);
+
         return true;
+    }
+
+    /**
+     * Sprawdza poprawnośc wpisanego adresu.
+     * IP Address Regular Expression Pattern by mkyong
+     * http://www.mkyong.com/regular-expressions/how-to-validate-ip-address-with-regular-expression/
+     *
+     * @param ip podany adres IP do sprawdzenia
+     * @return Prawda gdy adres poprawny.
+     */
+    private boolean checkAddress(String ip) {
+        Pattern PATTERN = Pattern.compile(
+                "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+        return PATTERN.matcher(ip).matches();
     }
 
     /**
      * Sprawdza czy string zawiera znaki specjalne (inne niz a-z lub 0-9)
      * Jezeli nie zostana znalezione zwraca true.
+     *
      * @param s String do sprawdzenia
      */
     private static boolean checkString(String s) {
@@ -187,6 +221,7 @@ public class Client {
 
     /**
      * Wyszukuje użytkownika z listy kontatków po ID
+     *
      * @param id zadane ID
      * @return Użytkownik (obiekt klasy Contact) o zadanym ID lub null, gdy nieznaleziony.
      */
@@ -198,20 +233,9 @@ public class Client {
         return null;
     }
 
-    private synchronized boolean recipientDisconnected() {
-        try {
-            for (Contact elem : contacts_list)
-                if (recipient_id.equals(Integer.toString(elem.getid()))) {
-                    return false;
-                }
-        } catch (NullPointerException e) {
-            return false;
-        }
-        return true;
-    }
-
     /**
      * Tworzy listę użytkowników z otrzymanego stringa
+     *
      * @param s lista użytkowników w postaci stringa
      */
     public synchronized void buildContactsList(String s) {
@@ -221,11 +245,8 @@ public class Client {
             String[] parts = tmp.split(":");
             int id = Integer.parseInt(parts[0]);
             String tmp_name = parts[1];
-            //System.out.println(id+" "+tmp_name);
             if (!tmp_name.equals(name))
                 contacts_list.add(new Contact(id, tmp_name));
-            //if(recipientDisconnected())
-            //  display.print("user discnnected");
         }
         display.printUsers();
     }
@@ -240,6 +261,7 @@ public class Client {
 
     /**
      * Inicjalizuje okno programu (ramke) dla danego klienta
+     *
      * @param c Klient
      */
     private void displayInit(Client c) {
@@ -286,26 +308,4 @@ public class Client {
             e.printStackTrace();
         }
     }
-
-            /*File f = new File("./Server/src/data.txt");
-        if (!f.isFile()) {
-            try {
-                PrintWriter writer = new PrintWriter("./Server/src/data.txt", "UTF-8");
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e2) {
-                e2.printStackTrace();
-            }
-        } else {
-            try (BufferedReader br = new BufferedReader(new FileReader(f))) {
-                for (String line; (line = br.readLine()) != null; ) {
-                    String[] parts = line.split(";");
-                    User new_user = new User(Integer.parseInt(parts[0]), parts[1], parts[2]);
-                    users_list.add(new_user);
-                }
-                // line is not visible here.
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }*/
 }

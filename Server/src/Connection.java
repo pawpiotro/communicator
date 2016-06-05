@@ -24,6 +24,7 @@ public class Connection implements Runnable {
 
     /**
      * Metoda odbiera login użytkownika upewniając się, że jest opisany właściwym nagłówkiem.
+     *
      * @return login użytkownika
      * @throws IOException
      */
@@ -38,6 +39,7 @@ public class Connection implements Runnable {
 
     /**
      * Metoda sprawdza czy podany login nie jest już zajęty.
+     *
      * @param client_name
      * @return prawda jeśli login już używany.
      */
@@ -54,6 +56,7 @@ public class Connection implements Runnable {
 
     /**
      * Metoda przekazuje wiadomość do odbiorcy.
+     *
      * @param msg Wiadomość - składa się z nagłówka zawierającego ID odbiorcy i wiadomości do przekazania
      */
     private void passMsg(String msg) {

@@ -12,11 +12,10 @@ import java.util.List;
 public class Server {
 
     private final int PORT = 12412;
-    //private final String HOST = "127.0.0.1";
     private ServerSocket server_socket;
 
     public List<User> users_list = new ArrayList<>();
-    public ServerDisplay display;// = new ServerDisplay();
+    public ServerDisplay display;
 
     private boolean serverInit() {
         try {
@@ -45,6 +44,7 @@ public class Server {
 
     /**
      * Metoda znajduje użytkownika zadanym ID
+     *
      * @param id zadane ID
      * @return Obiekt klasy User o zadanym ID bądź null gdy nieznaleziony.
      */
@@ -58,6 +58,7 @@ public class Server {
 
     /**
      * Metoda zamyka socket w przypadku nieudanego połączenia.
+     *
      * @param socket socket
      */
     public static void connectionFailed(Socket socket) {
@@ -72,6 +73,7 @@ public class Server {
      * Metoda wywoływana, gdy użytkownik o podanym ID zakończy połączenie.
      * Metoda wypisuje odpowiednie komunikaty, zamyka socket, usuwa użytkownika z listy,
      * aktualizuje listę i wywołuje metodę rozsyłającą ją do pozostałych użytkowników.
+     *
      * @param id ID użytkownika, który zakończył połączeni
      */
     public synchronized void disconnect(int id) {
@@ -102,7 +104,6 @@ public class Server {
     public static void main(String[] args) {
         Server server = new Server();
         server.display = new ServerDisplay(server);
-        //server.displayInit(server);
         boolean running = true;
         int client_seq = 0;
         if (server.serverInit())
