@@ -1,5 +1,6 @@
 /**
- * Created by Pawel on 28-May-16.
+ * Klasa, której obiekty przechowują informacje o kontaktach z listy.
+ * Na razie jest to tylko ID i nazwa.
  */
 public class Contact {
     private int id;

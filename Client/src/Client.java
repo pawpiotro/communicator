@@ -9,9 +9,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by Pawel on 23-Apr-16.
+ * Główna klasa.
+ * Odpowiedzialna za połączenie z serwerem, wczytanie nazwy użytkownika i zweryfikowanie jej poprawności.
  */
-
 public class Client {
     private int port = 12412; //default
     private String host = "127.0.0.1";  // default
@@ -50,6 +50,10 @@ public class Client {
         return true;
     }
 
+    /**
+     * Zamknięcie połączenia.
+     * Wypisanie komunikatu, zamknięcie socketa i zablokowanie pola do wpisywania wiadomości.
+     */
     public void disconnectFromServer() {
         try {
             display.print("Connection to server lost.");
@@ -61,9 +65,8 @@ public class Client {
     }
 
     /**
-     * Zmienia adresata. Wybór z listy
-     *
-     * @param s
+     * Zmienia adresata.
+     * @param s nazwa użytkownika wybranego z listy kontaktów
      */
     public void changeRecipient(String s) {
         closeFile();
@@ -79,6 +82,12 @@ public class Client {
         }
     }
 
+    /**
+     * Otwiera plik, do którego zapisywana jest historia rozmowy z aktualnie wybranym rozmówcą.
+     * Jeśli plik nie jest pusty, wypisuje zawartą już w nim historię rozmowy.
+     * Ustawia file_writer na właściwy plik. Jest on wykorzystywany w klasie Receive do zapisu
+     * przychodzacych wiadomości
+     */
     private void openFile() {
         String path = "./Client/history/" + name + "/" + recipient_id + ".txt";
         File f = new File(path);
@@ -98,6 +107,9 @@ public class Client {
         }
     }
 
+    /**
+     * Zamyka aktualnie otwarty plik zapisu
+     */
     public void closeFile() {
         String path = "./Client/history/" + name + "/" + recipient_id + ".txt";
         File f = new File(path);
@@ -105,6 +117,12 @@ public class Client {
             file_writer.close();
     }
 
+    /**
+     * Jeśli odebrana przez receiveMsg() wiadomość nie została wysłana
+     * przez aktualnie wybranego rozmówcę, jest ona zapisywana do pliku.
+     * @param id ID nadawcy wiadomości
+     * @param s Wiadomość
+     */
     public void writeToFile(String id, String s) {
         String path = "./Client/history/" + name + "/" + id + ".txt";
         File f = new File(path);
@@ -118,6 +136,13 @@ public class Client {
         }
     }
 
+    /**
+     * W tej wersji programu po zamknięciu usuwane są pliki z historią rozmowy,
+     * ponieważ ID użytkowników są nadawane dynamicznie i użytkownik po ponownym zalogowaniu
+     * nie zobaczy swojej historii rozmowy. Funkcja zostanie rozwinięta w kolejnych wersjach programu.
+     * @param f ścieżka folderu do usunięcia
+     * @throws IOException
+     */
     void deleteDirectory(File f) throws IOException {
         if (f.isDirectory()) {
             for (File c : f.listFiles())
@@ -128,7 +153,7 @@ public class Client {
     }
 
     /**
-     * Zmiana adresu serwera, gdy domyslny nie odpowiada.
+     * Zmiana adresu serwera, gdy domyślny serwer nie odpowiada.
      */
     private boolean changeServer() {
         String address = "";
@@ -151,9 +176,7 @@ public class Client {
     /**
      * Sprawdza czy string zawiera znaki specjalne (inne niz a-z lub 0-9)
      * Jezeli nie zostana znalezione zwraca true.
-     *
-     * @param s
-     * @return
+     * @param s String do sprawdzenia
      */
     private static boolean checkString(String s) {
         Pattern p = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE);
@@ -162,6 +185,11 @@ public class Client {
         return !b;
     }
 
+    /**
+     * Wyszukuje użytkownika z listy kontatków po ID
+     * @param id zadane ID
+     * @return Użytkownik (obiekt klasy Contact) o zadanym ID lub null, gdy nieznaleziony.
+     */
     public synchronized Contact findUser(int id) {
         for (Contact tmp : contacts_list)
             if (tmp.getid() == id) {
@@ -182,6 +210,10 @@ public class Client {
         return true;
     }
 
+    /**
+     * Tworzy listę użytkowników z otrzymanego stringa
+     * @param s lista użytkowników w postaci stringa
+     */
     public synchronized void buildContactsList(String s) {
         String[] contacts = s.split(";");
         contacts_list.clear();
@@ -198,11 +230,18 @@ public class Client {
         display.printUsers();
     }
 
+    /**
+     * Czyści listę kontaków
+     */
     public synchronized void clearContactsList() {
         contacts_list.clear();
         display.printUsers();
     }
 
+    /**
+     * Inicjalizuje okno programu (ramke) dla danego klienta
+     * @param c Klient
+     */
     private void displayInit(Client c) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {

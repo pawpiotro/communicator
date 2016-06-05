@@ -3,9 +3,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
- * Klasa użytkownika. Obiekt tej klasy zawiera wszystkie informacje o połączonym użytkowniku.
+ * Klasa użytkownika. Obiekt tej klasy zawiera wszystkie informacje o połączonym użytkowniku
+ * (w tym strumień wyjściowy, potrzebny do przesyłania do użytkownika wiadomości)
  */
-
 public class User {
     private int id;
     private String name;
@@ -31,10 +31,6 @@ public class User {
 
     public String getAddress() {
         return address;
-    }
-
-    public Socket getSocket() {
-        return socket;
     }
 
     public void closeSocket() throws IOException {

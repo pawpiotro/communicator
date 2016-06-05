@@ -1,12 +1,10 @@
-/**
- * Strumień niestandardowy. Dzięki niemu wszystkie komunikaty i błędy programu wypisywane są w oknie
- * Informacje te są potrzebne do nawiązywania połączeń między klientami.
- */
-
 import javax.swing.*;
 import java.io.IOException;
 import java.io.OutputStream;
 
+/**
+ * Strumień niestandardowy. Dzięki niemu wszystkie komunikaty i błędy wypisywane są w oknie programu.
+ */
 public class CustomOutputStream extends OutputStream {
     private JTextArea textArea;
 

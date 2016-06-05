@@ -1,8 +1,3 @@
-/**
- * Widok. Wyswietla liste polaczonych klientow.
- * Wypisuje wszystkie komunikaty i bledy.
- */
-
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
 import java.awt.*;
@@ -10,6 +5,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.PrintStream;
 
+/**
+ * Okno programu. Wyświetla listę podłączonych użytkowników.
+ * Wypisuje wszystkie komunikaty i ewentualne błędy za pomocą niestandardowego strumienia.
+ */
 public class ServerDisplay extends JFrame {
     private Server server;
     private JTextArea area2 = new JTextArea();
@@ -17,12 +16,10 @@ public class ServerDisplay extends JFrame {
     private JScrollPane pane = new JScrollPane(area);
     private JPanel panel = new JPanel();
     private JScrollPane pane2 = new JScrollPane(area2);
-    private PrintStream standard_out = System.out; //stary output
+    //private PrintStream standard_out = System.out; //stary output
 
     private void setCustomOutput(JTextArea area) {
         PrintStream print_stream = new PrintStream(new CustomOutputStream(area));
-        //PrintStream standard_out = System.out; //stary output
-
         //podmiana standardowego strumienia
         System.setOut(print_stream);
         System.setErr(print_stream);
@@ -79,19 +76,20 @@ public class ServerDisplay extends JFrame {
     }
 
     /**
-     * wyswietla wiadomosc w oknie programu
-     *
-     * @param message wiadomosc do wyswietlenia
+     * Wyświetla wiadomość w oknie progrmau.
+     * @param message wiadomość do wyświetlenia.
      */
     public void print(String message) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 area.append(message + "\n");
-                //area.setCaretPosition(area.getDocument().getLength());
             }
         });
     }
 
+    /**
+     * Wypisuje listę aktualnie podłączony użytkowników.
+     */
     public synchronized void printUsers() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -103,13 +101,4 @@ public class ServerDisplay extends JFrame {
             }
         });
     }
-
-    /*public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                ServerDisplay display = new ServerDisplay();
-                display.setVisible(true);
-            }
-        });
-    }*/
 }

@@ -1,8 +1,3 @@
-/**
- * Klasa główna. Inicjalizacja zmiennych i struktur potrzebnych do obsługi klienta.
- * Nasłuchuje nowych połączeń od klientów i zestawia klientów. Tworzy wątki dla każdego połączenia.
- */
-
 import javax.swing.*;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -10,7 +5,10 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Klasa główna. Inicjalizacja zmiennych i struktur potrzebnych do obsługi klienta.
+ * Nasłuchuje nowych połączeń od klientów i tworzy dla nich wątki.
+ */
 public class Server {
 
     private final int PORT = 12412;
@@ -32,6 +30,9 @@ public class Server {
         return true;
     }
 
+    /**
+     * Metoda rozsyła aktualną listę podłączony użytkowników do wszystkich klientów.
+     */
     public synchronized void distributeList() {
         String list = "usrls";
         for (User usr : users_list) {
@@ -42,6 +43,11 @@ public class Server {
         }
     }
 
+    /**
+     * Metoda znajduje użytkownika zadanym ID
+     * @param id zadane ID
+     * @return Obiekt klasy User o zadanym ID bądź null gdy nieznaleziony.
+     */
     public synchronized User findUser(int id) {
         for (User tmp : users_list)
             if (tmp.getid() == id) {
@@ -50,6 +56,10 @@ public class Server {
         return null;
     }
 
+    /**
+     * Metoda zamyka socket w przypadku nieudanego połączenia.
+     * @param socket socket
+     */
     public static void connectionFailed(Socket socket) {
         try {
             socket.close();
@@ -58,6 +68,12 @@ public class Server {
         }
     }
 
+    /**
+     * Metoda wywoływana, gdy użytkownik o podanym ID zakończy połączenie.
+     * Metoda wypisuje odpowiednie komunikaty, zamyka socket, usuwa użytkownika z listy,
+     * aktualizuje listę i wywołuje metodę rozsyłającą ją do pozostałych użytkowników.
+     * @param id ID użytkownika, który zakończył połączeni
+     */
     public synchronized void disconnect(int id) {
         try {
             User usr = findUser(id);

@@ -7,7 +7,6 @@ import java.net.Socket;
 /**
  * Wątek pojedynczego połączenia między klientami.
  */
-
 public class Connection implements Runnable {
     private Server server;
     private int client_ID;
@@ -23,6 +22,11 @@ public class Connection implements Runnable {
         this.output_stream = new PrintWriter(socket.getOutputStream(), true);
     }
 
+    /**
+     * Metoda odbiera login użytkownika upewniając się, że jest opisany właściwym nagłówkiem.
+     * @return login użytkownika
+     * @throws IOException
+     */
     private String receiveName() throws IOException {
         String s = input_stream.readLine();
         String header = s.substring(0, 5);
@@ -32,6 +36,11 @@ public class Connection implements Runnable {
             return null;
     }
 
+    /**
+     * Metoda sprawdza czy podany login nie jest już zajęty.
+     * @param client_name
+     * @return prawda jeśli login już używany.
+     */
     private boolean nameAlreadyTaken(String client_name) {
         for (User elem : server.users_list)
             if (elem.getName().equals(client_name))
@@ -43,15 +52,22 @@ public class Connection implements Runnable {
         server.users_list.add(usr);
     }
 
+    /**
+     * Metoda przekazuje wiadomość do odbiorcy.
+     * @param msg Wiadomość - składa się z nagłówka zawierającego ID odbiorcy i wiadomości do przekazania
+     */
     private void passMsg(String msg) {
         int id = Integer.parseInt(msg.substring(0, 4));
         User tmp = server.findUser(id);
         String s = String.format("%4s", Integer.toString(client_ID)).replace(' ', '0');
         tmp.send("nrmsg" + s + msg.substring(4));
-        //System.out.println(client_ID + " to "+id+": " + msg.substring(4));
     }
 
-    private boolean readMsg(String client_name) throws IOException {
+    /**
+     * Odbiera wiadomośc i w zależności od nagłówka wykonuje odpowiednie czynności.
+     * (wyświetla wiadomość lub zamyka połączenie).
+     */
+    private boolean readMsg() throws IOException {
         String line;
         if ((line = input_stream.readLine()) != null) {
             String header = line.substring(0, 5);
@@ -59,7 +75,7 @@ public class Connection implements Runnable {
             if (line.length() > 5)
                 msg = line.substring(5);
             else
-                msg = "elo";
+                msg = "";
             switch (header) {
                 case "nrmsg":
                     passMsg(msg);
@@ -100,7 +116,7 @@ public class Connection implements Runnable {
         server.distributeList();
         while (true) {
             try {
-                if (!readMsg(client_name))
+                if (!readMsg())
                     return;
                 Thread.sleep(500);
             } catch (IOException e) {

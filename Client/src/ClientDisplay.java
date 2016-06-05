@@ -1,7 +1,3 @@
-/**
- * Widok. Okno programu
- */
-
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -11,6 +7,9 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * Okno programu
+ */
 public class ClientDisplay extends JFrame {
     private Client client;
     private JTextArea area = new JTextArea();
@@ -25,6 +24,10 @@ public class ClientDisplay extends JFrame {
     private SendAction send_message = new SendAction();
     private SelectContact select_contact = new SelectContact();
 
+    /**
+     * Nasłuchiwacz do wysyłania wiadomości za pomocą przycisku Send
+     * lub poprzez naciśnięcie klawisza enter gdy pole input nie jest puste.
+     */
     private class SendAction implements ActionListener, KeyListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -61,6 +64,9 @@ public class ClientDisplay extends JFrame {
         }
     }
 
+    /**
+     * Nasłuchiwacz do zmiany odbiorcy - wybierany z listy. Gdy lista pusta pole input pozostajce zablokowane.
+     */
     private class SelectContact implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
@@ -70,6 +76,11 @@ public class ClientDisplay extends JFrame {
         }
     }
 
+    /**
+     * Własny CellRenderer dla listy kontaktów. Jeżeli użytkownik znajduje się w strukturze hashMap
+     * oznacza to, że kliento otrzymął od niego nową wiadomość i jeszcze jej nie odczytał.
+     * Jest on wtedy oznaczony kolorem niebieskim na liście kontaktów.
+     */
     private class MyListRenderer extends DefaultListCellRenderer {
         public Component getListCellRendererComponent(JList list,
                                                       Object value, int index, boolean isSelected,
@@ -166,6 +177,10 @@ public class ClientDisplay extends JFrame {
         });
     }
 
+    /**
+     * Zmienia opis okna. Służy do dodania do niego nazwy użytkownika.
+     * @param s nowy opis okna do ustawienia
+     */
     public void changeTitle(String s) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -175,9 +190,8 @@ public class ClientDisplay extends JFrame {
     }
 
     /**
-     * wyswietla wiadomosc w oknie programu
-     *
-     * @param message wiadomosc do wyswietlenia
+     * Wyświetla wiadomość w oknie programu
+     * @param message wiadomość do wyświetlenia
      */
     public void print(String message) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -187,6 +201,9 @@ public class ClientDisplay extends JFrame {
         });
     }
 
+    /**
+     * Czyści zawartość pola tekstowego zawierającego historię rozmowy i komunikaty.
+     */
     public void clean() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -195,6 +212,10 @@ public class ClientDisplay extends JFrame {
         });
     }
 
+    /**
+     * Blokuje pole do wprowadzania wiadomości
+     * np. gdy nie został wybrany żaden odbiorca (nie można wysłać wiadomości do nikogo).
+     */
     public void lock() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -203,6 +224,9 @@ public class ClientDisplay extends JFrame {
         });
     }
 
+    /**
+     * Odblokowuje pole do wprowadzania wiadomości.
+     */
     public void unlock() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -210,7 +234,9 @@ public class ClientDisplay extends JFrame {
             }
         });
     }
-
+    /**
+     * Metoda wypisująca listę kontaktów
+     */
     public void printUsers() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
