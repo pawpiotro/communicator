@@ -329,10 +329,6 @@ public class Client {
         return contactsList;
     }
 
-    public void setContactsList(List<Contact> contactsList) {
-        this.contactsList = contactsList;
-    }
-
     public String getName() {
         return name;
     }
@@ -351,9 +347,5 @@ public class Client {
 
     public HashMap getHashMap() {
         return hashMap;
-    }
-
-    public void setHashMap(HashMap hashMap) {
-        this.hashMap = hashMap;
     }
 }
