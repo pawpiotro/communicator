@@ -34,9 +34,9 @@ public class ClientDisplay extends JFrame {
             String message = input.getText();
             if (!message.isEmpty()) {
                 input.setText("");
-                client.output_stream.println("nrmsg" + client.recipient_id + message);
-                print(client.name + ": " + message);
-                client.file_writer.write(client.name + ": " + message + "\n");
+                client.outputStream.println("nrmsg" + client.getRecipientID() + message);
+                print(client.getName() + ": " + message);
+                client.fileWriter.write(client.getName() + ": " + message + "\n");
             }
         }
 
@@ -45,9 +45,9 @@ public class ClientDisplay extends JFrame {
             if (k.getKeyCode() == KeyEvent.VK_ENTER) {
                 String message = input.getText();
                 if (!message.isEmpty()) {
-                    client.output_stream.println("nrmsg" + client.recipient_id + message);
-                    print(client.name + ": " + message);
-                    client.file_writer.write(client.name + ": " + message + "\n");
+                    client.outputStream.println("nrmsg" + client.getRecipientID() + message);
+                    print(client.getName() + ": " + message);
+                    client.fileWriter.write(client.getName() + ": " + message + "\n");
                 }
             }
         }
@@ -87,7 +87,7 @@ public class ClientDisplay extends JFrame {
                                                       boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index,
                     isSelected, cellHasFocus);
-            if (client.hashMap.containsKey(value)) {
+            if (client.getHashMap().containsKey(value)) {
                 setForeground(Color.blue);
             } else {
                 setForeground(Color.black);
@@ -161,12 +161,12 @@ public class ClientDisplay extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                client.output_stream.println("close");
+                client.outputStream.println("close");
                 client.closeFile();
-                client.receive.interrupt();
+                client.getReceive().interrupt();
                 e.getWindow().dispose();
                 try {
-                    File f = new File("./Client/history/" + client.name);
+                    File f = new File("./Client/history/" + client.getName());
                     if (f.exists())
                         client.deleteDirectory(f);
                 } catch (IOException e1) {
@@ -240,9 +240,9 @@ public class ClientDisplay extends JFrame {
     public void printUsers() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                String[] contacts = new String[client.contacts_list.size()];
-                for (int i = 0; i < client.contacts_list.size(); i++) {
-                    contacts[i] = client.contacts_list.get(i).getName();
+                String[] contacts = new String[client.getContactsList().size()];
+                for (int i = 0; i < client.getContactsList().size(); i++) {
+                    contacts[i] = client.getContactsList().get(i).getName();
                 }
                 list.setListData(contacts);
             }

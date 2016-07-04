@@ -44,14 +44,14 @@ public class Connection implements Runnable {
      * @return prawda jeśli login już używany.
      */
     private boolean nameAlreadyTaken(String client_name) {
-        for (User elem : server.users_list)
+        for (User elem : server.getUsersList())
             if (elem.getName().equals(client_name))
                 return true;
         return false;
     }
 
     private synchronized void addUser(User usr) {
-        server.users_list.add(usr);
+        server.getUsersList().add(usr);
     }
 
     /**
@@ -115,7 +115,7 @@ public class Connection implements Runnable {
         System.out.println("New client connected from " + address);
         User new_user = new User(client_ID, client_name, address, socket, output_stream);
         addUser(new_user);
-        server.display.printUsers();
+        server.getDisplay().printUsers();
         server.distributeList();
         while (true) {
             try {

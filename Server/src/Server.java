@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * Klasa główna. Inicjalizacja zmiennych i struktur potrzebnych do obsługi klienta.
  * Nasłuchuje nowych połączeń od klientów i tworzy dla nich wątki.
@@ -12,14 +13,16 @@ import java.util.List;
 public class Server {
 
     private final int PORT = 12412;
-    private ServerSocket server_socket;
 
-    public List<User> users_list = new ArrayList<>();
-    public ServerDisplay display;
+    private ServerSocket serverSocket;
+
+    private List<User> usersList = new ArrayList<>();
+    private ServerDisplay display;
+
 
     private boolean serverInit() {
         try {
-            this.server_socket = new ServerSocket(PORT);
+            this.setServerSocket(new ServerSocket(PORT));
             System.out.println("Server running");
 
         } catch (IOException e) {
@@ -34,10 +37,10 @@ public class Server {
      */
     public synchronized void distributeList() {
         String list = "usrls";
-        for (User usr : users_list) {
+        for (User usr : getUsersList()) {
             list = list + usr.getid() + ":" + usr.getName() + ";";
         }
-        for (User elem : users_list) {
+        for (User elem : getUsersList()) {
             elem.send(list);
         }
     }
@@ -49,7 +52,7 @@ public class Server {
      * @return Obiekt klasy User o zadanym ID bądź null gdy nieznaleziony.
      */
     public synchronized User findUser(int id) {
-        for (User tmp : users_list)
+        for (User tmp : getUsersList())
             if (tmp.getid() == id) {
                 return tmp;
             }
@@ -84,9 +87,9 @@ public class Server {
                 name = "Unknown user";
             String address = usr.getAddress();
             usr.closeSocket();
-            users_list.remove(usr);
+            getUsersList().remove(usr);
             System.out.println(name + " (" + address + ") disconnected");
-            display.printUsers();
+            getDisplay().printUsers();
             distributeList();
         } catch (IOException e) {
             e.printStackTrace();
@@ -96,24 +99,24 @@ public class Server {
     private void displayInit(Server s) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                s.display = new ServerDisplay(s);
+                s.setDisplay(new ServerDisplay(s));
             }
         });
     }
 
     public static void main(String[] args) {
         Server server = new Server();
-        server.display = new ServerDisplay(server);
+        server.setDisplay(new ServerDisplay(server));
         boolean running = true;
         int client_seq = 0;
         if (server.serverInit())
             while (running) {
                 try {
-                    Socket tmp_socket = server.server_socket.accept();
+                    Socket tmp_socket = server.getServerSocket().accept();
                     Thread tmp = new Thread(new Connection(client_seq, tmp_socket, server));
                     tmp.start();
                     client_seq++;
-                    server.display.printUsers();
+                    server.getDisplay().printUsers();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -122,4 +125,23 @@ public class Server {
             System.out.println("Server already started.");
     }
 
+    public ServerSocket getServerSocket() {
+        return serverSocket;
+    }
+
+    public void setServerSocket(ServerSocket server_socket) {
+        this.serverSocket = server_socket;
+    }
+
+    public List<User> getUsersList() {
+        return usersList;
+    }
+
+    public ServerDisplay getDisplay() {
+        return display;
+    }
+
+    public void setDisplay(ServerDisplay display) {
+        this.display = display;
+    }
 }

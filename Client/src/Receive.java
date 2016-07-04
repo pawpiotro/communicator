@@ -14,7 +14,7 @@ public class Receive implements Runnable {
 
     public Receive(Client c) {
         this.client = c;
-        this.stream = c.input_stream;
+        this.stream = c.inputStream;
     }
 
     /**
@@ -29,13 +29,13 @@ public class Receive implements Runnable {
         int id = Integer.parseInt(msg.substring(0, 4));
         Contact tmp = client.findUser(id);
         String s = tmp.getName() + ": " + msg.substring(4);
-        if (id == Integer.parseInt(client.recipient_id)) {
-            client.display.print(s);
-            client.file_writer.write(s + "\n");
+        if (id == Integer.parseInt(client.getRecipientID())) {
+            client.getDisplay().print(s);
+            client.fileWriter.write(s + "\n");
         } else {
             client.writeToFile(msg.substring(0, 4), s);
-            client.hashMap.put(tmp.getName(), "newmsg");
-            client.display.printUsers();
+            client.getHashMap().put(tmp.getName(), "newmsg");
+            client.getDisplay().printUsers();
         }
     }
 
@@ -63,8 +63,8 @@ public class Receive implements Runnable {
                             client.buildContactsList(msg);
                             break;
                         case "chngn":
-                            client.display.print("Name already taken. Changed to " + msg);
-                            client.name = msg;
+                            client.getDisplay().print("Name already taken. Changed to " + msg);
+                            client.setName(msg);
                             break;
                     }
                 }

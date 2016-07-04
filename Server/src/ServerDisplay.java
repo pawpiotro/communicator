@@ -73,7 +73,7 @@ public class ServerDisplay extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public synchronized void windowClosing(WindowEvent e) {
-                for (User elem : server.users_list)
+                for (User elem : server.getUsersList())
                     elem.send("close");
                 System.exit(0);
             }
@@ -101,7 +101,7 @@ public class ServerDisplay extends JFrame {
             public void run() {
                 area2.setText("");
                 area2.append("ID    Name        Address\n");
-                for (User elem : server.users_list) {
+                for (User elem : server.getUsersList()) {
                     area2.append(elem.getid() + "       " + elem.getName() + "            " + elem.getAddress() + "\n");
                 }
             }

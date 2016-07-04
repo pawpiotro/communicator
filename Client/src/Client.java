@@ -15,19 +15,19 @@ import java.util.regex.Pattern;
 public class Client {
     private int port = 12412; //default
     private String host = "127.0.0.1";  // default
-    public ClientDisplay display;
-    private Socket server_socket;
-    public BufferedReader input_stream;
-    public PrintWriter output_stream;
-    public Thread receive;
+    private ClientDisplay display;
+    private Socket serverSocket;
+    public BufferedReader inputStream;
+    public PrintWriter outputStream;
+    private Thread receive;
 
-    public List<Contact> contacts_list = new ArrayList<>();
-    public String name;
-    public String recipient_id = "-1";
+    private List<Contact> contactsList = new ArrayList<>();
+    private String name;
+    private String recipientID = "-1";
 
-    public HashMap hashMap = new HashMap();
+    private HashMap hashMap = new HashMap();
 
-    public PrintWriter file_writer;
+    public PrintWriter fileWriter;
 
     /**
      * Ustanawia połączenie z serwerem.
@@ -38,15 +38,15 @@ public class Client {
         boolean connected = false;
         while (!connected) {
             try {
-                server_socket = new Socket(host, port);
+                serverSocket = new Socket(host, port);
                 connected = true;
             } catch (ConnectException c) {
                 if (!changeServer())
                     return false;
             }
         }
-        input_stream = new BufferedReader(new InputStreamReader(server_socket.getInputStream()));
-        output_stream = new PrintWriter(server_socket.getOutputStream(), true);
+        inputStream = new BufferedReader(new InputStreamReader(serverSocket.getInputStream()));
+        outputStream = new PrintWriter(serverSocket.getOutputStream(), true);
         return true;
     }
 
@@ -56,9 +56,9 @@ public class Client {
      */
     public void disconnectFromServer() {
         try {
-            display.print("Connection to server lost.");
-            display.lock();
-            server_socket.close();
+            getDisplay().print("Connection to server lost.");
+            getDisplay().lock();
+            serverSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -71,13 +71,13 @@ public class Client {
      */
     public void changeRecipient(String s) {
         closeFile();
-        for (Contact tmp : contacts_list) {
+        for (Contact tmp : getContactsList()) {
             if (s.equals(tmp.getName())) {
-                display.unlock();
-                recipient_id = String.format("%4s", Integer.toString(tmp.getid())).replace(' ', '0');
+                getDisplay().unlock();
+                setRecipientID(String.format("%4s", Integer.toString(tmp.getid())).replace(' ', '0'));
                 openFile();
-                if (hashMap.containsKey(tmp.getName()))
-                    hashMap.remove(tmp.getName());
+                if (getHashMap().containsKey(tmp.getName()))
+                    getHashMap().remove(tmp.getName());
                 return;
             }
         }
@@ -86,22 +86,22 @@ public class Client {
     /**
      * Otwiera plik, do którego zapisywana jest historia rozmowy z aktualnie wybranym rozmówcą.
      * Jeśli plik nie jest pusty, wypisuje zawartą już w nim historię rozmowy.
-     * Ustawia file_writer na właściwy plik. Jest on wykorzystywany w klasie Receive do zapisu
+     * Ustawia fileWriter na właściwy plik. Jest on wykorzystywany w klasie Receive do zapisu
      * przychodzacych wiadomości
      */
     private void openFile() {
-        String path = "./Client/history/" + name + "/" + recipient_id + ".txt";
+        String path = "./Client/history/" + getName() + "/" + getRecipientID() + ".txt";
         File f = new File(path);
         f.getParentFile().mkdirs();
         try {
-            file_writer = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
+            fileWriter = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
         } catch (IOException e) {
             e.printStackTrace();
         }
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
-            display.clean();
+            getDisplay().clean();
             for (String line; (line = br.readLine()) != null; ) {
-                display.print(line);
+                getDisplay().print(line);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -112,10 +112,10 @@ public class Client {
      * Zamyka aktualnie otwarty plik zapisu
      */
     public void closeFile() {
-        String path = "./Client/history/" + name + "/" + recipient_id + ".txt";
+        String path = "./Client/history/" + getName() + "/" + getRecipientID() + ".txt";
         File f = new File(path);
         if (f.isFile())
-            file_writer.close();
+            fileWriter.close();
     }
 
     /**
@@ -126,13 +126,13 @@ public class Client {
      * @param s  Wiadomość
      */
     public void writeToFile(String id, String s) {
-        String path = "./Client/history/" + name + "/" + id + ".txt";
+        String path = "./Client/history/" + getName() + "/" + id + ".txt";
         File f = new File(path);
         f.getParentFile().mkdirs();
         try {
-            PrintWriter tmp_file_writer = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
-            tmp_file_writer.write(s + "\n");
-            tmp_file_writer.close();
+            PrintWriter tmp_fileWriter = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
+            tmp_fileWriter.write(s + "\n");
+            tmp_fileWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -226,7 +226,7 @@ public class Client {
      * @return Użytkownik (obiekt klasy Contact) o zadanym ID lub null, gdy nieznaleziony.
      */
     public synchronized Contact findUser(int id) {
-        for (Contact tmp : contacts_list)
+        for (Contact tmp : getContactsList())
             if (tmp.getid() == id) {
                 return tmp;
             }
@@ -240,23 +240,23 @@ public class Client {
      */
     public synchronized void buildContactsList(String s) {
         String[] contacts = s.split(";");
-        contacts_list.clear();
+        getContactsList().clear();
         for (String tmp : contacts) {
             String[] parts = tmp.split(":");
             int id = Integer.parseInt(parts[0]);
             String tmp_name = parts[1];
-            if (!tmp_name.equals(name))
-                contacts_list.add(new Contact(id, tmp_name));
+            if (!tmp_name.equals(getName()))
+                getContactsList().add(new Contact(id, tmp_name));
         }
-        display.printUsers();
+        getDisplay().printUsers();
     }
 
     /**
      * Czyści listę kontaków
      */
     public synchronized void clearContactsList() {
-        contacts_list.clear();
-        display.printUsers();
+        getContactsList().clear();
+        getDisplay().printUsers();
     }
 
     /**
@@ -267,7 +267,7 @@ public class Client {
     private void displayInit(Client c) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                c.display = new ClientDisplay(c);
+                c.setDisplay(new ClientDisplay(c));
             }
         });
     }
@@ -275,14 +275,14 @@ public class Client {
     public static void main(String[] args) {
         Client client = new Client();
         client.displayInit(client);
-        client.name = "";
+        client.setName("");
         boolean valid_name = false;
         String s = "Hello! Give nickname";
         while (!valid_name) {
-            client.name = JOptionPane.showInputDialog(s);
-            if (client.name != null) {
-                if (!client.name.isEmpty()) {
-                    if (checkString(client.name))
+            client.setName(JOptionPane.showInputDialog(s));
+            if (client.getName() != null) {
+                if (!client.getName().isEmpty()) {
+                    if (checkString(client.getName()))
                         valid_name = true;
                     else
                         s = "Give nickname (no special characters)";
@@ -292,20 +292,68 @@ public class Client {
                 return;
             }
         }
-        client.display.setVisible(true);
-        client.display.requestFocusOnInput();
-        client.display.changeTitle(client.name);
+        client.getDisplay().setVisible(true);
+        client.getDisplay().requestFocusOnInput();
+        client.getDisplay().changeTitle(client.getName());
         try {
             if (!client.makeConnection()) {
-                client.display.dispose();
+                client.getDisplay().dispose();
                 return;
             }
-            client.output_stream.println("login" + client.name);
-            client.display.print("Witaj " + client.name + "!");
-            client.receive = new Thread(new Receive(client));
-            client.receive.start();
+            client.outputStream.println("login" + client.getName());
+            client.getDisplay().print("Witaj " + client.getName() + "!");
+            client.setReceive(new Thread(new Receive(client)));
+            client.getReceive().start();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public ClientDisplay getDisplay() {
+        return display;
+    }
+
+    public void setDisplay(ClientDisplay display) {
+        this.display = display;
+    }
+
+    public Thread getReceive() {
+        return receive;
+    }
+
+    public void setReceive(Thread receive) {
+        this.receive = receive;
+    }
+
+    public List<Contact> getContactsList() {
+        return contactsList;
+    }
+
+    public void setContactsList(List<Contact> contactsList) {
+        this.contactsList = contactsList;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getRecipientID() {
+        return recipientID;
+    }
+
+    public void setRecipientID(String recipientID) {
+        this.recipientID = recipientID;
+    }
+
+    public HashMap getHashMap() {
+        return hashMap;
+    }
+
+    public void setHashMap(HashMap hashMap) {
+        this.hashMap = hashMap;
     }
 }
